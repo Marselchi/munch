@@ -6,6 +6,7 @@ import '../../../../core/utils/debouncer.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../application/rules_controller.dart';
 import '../application/search_index.dart';
+import '../application/search_service.dart';
 import '../domain/rules_entities.dart';
 import 'entity_detail_screen.dart';
 import 'rule_article_screen.dart';
@@ -262,7 +263,7 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen> {
     );
   }
 
-  Widget _buildSearchResults(dynamic results, RulesState state) {
+  Widget _buildSearchResults(SearchResultGroup results, RulesState state) {
     if (results.isEmpty) {
       return const EmptyState(
         icon: Icons.search_off,
@@ -333,6 +334,7 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen> {
                         TextSourceKind.generalBlock => 'Общие правила',
                         TextSourceKind.epicRule => 'Эпические правила',
                         TextSourceKind.entityRule => 'Способность карты',
+                        _ => 'Правила',
                       },
                       linkedEntity: linkedEntity,
                     );
@@ -364,7 +366,7 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen> {
     );
   }
 
-  void _openDetail(dynamic entity) {
+  void _openDetail(RuleEntity entity) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => EntityDetailScreen(entity: entity),
