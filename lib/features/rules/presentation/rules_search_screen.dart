@@ -129,7 +129,7 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen> {
             tooltip: 'Вернуться к столу',
             onPressed: () {
               ref.read(rulesProvider.notifier).search('');
-              Navigator.of(context).popUntil((route) => route.isFirst);
+              Navigator.of(context).popUntil((route) => route.settings.name == '/table' || route.isFirst);
             },
           ),
           IconButton(

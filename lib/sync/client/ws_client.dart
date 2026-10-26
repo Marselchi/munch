@@ -9,17 +9,25 @@ class WebSocketClient {
   WebSocketChannel? get channel => _channel;
   bool get isConnected => _channel != null;
 
+  /// Internal connection helper that does not bind [_channel] until decided.
+  Future<WebSocketChannel> _createCandidateChannel(
+    String ip,
+    int port, {
+    required Duration timeout,
+  }) async {
+    final uri = Uri.parse('ws://$ip:$port');
+    final channel = WebSocketChannel.connect(uri);
+    await channel.ready.timeout(timeout);
+    return channel;
+  }
+
   /// Attempts to connect to `ws://<ip>:<port>`.
   Future<WebSocketChannel> connectSingle(
     String ip,
     int port, {
     Duration timeout = AppConstants.connectTimeout,
   }) async {
-    final uri = Uri.parse('ws://$ip:$port');
-    final channel = WebSocketChannel.connect(uri);
-
-    // Await ready with timeout
-    await channel.ready.timeout(timeout);
+    final channel = await _createCandidateChannel(ip, port, timeout: timeout);
     _channel = channel;
     return channel;
   }
@@ -43,8 +51,9 @@ class WebSocketClient {
     var remaining = ips.length;
 
     for (final ip in ips) {
-      connectSingle(ip, port, timeout: timeout).then((channel) {
+      _createCandidateChannel(ip, port, timeout: timeout).then((channel) {
         if (!completer.isCompleted) {
+          _channel = channel;
           completer.complete((channel, ip));
         } else {
           try {

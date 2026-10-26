@@ -9,6 +9,8 @@ import 'package:munchkin_companion/core/widgets/latest_change_banner.dart';
 import 'package:munchkin_companion/core/widgets/status_chip.dart';
 import 'package:munchkin_companion/core/widgets/traits_picker_sheet.dart';
 import 'package:munchkin_companion/features/level_history/presentation/history_screen.dart';
+import 'package:munchkin_companion/features/host_session/application/host_session_controller.dart';
+import 'package:munchkin_companion/features/host_session/presentation/host_game_screen.dart';
 import 'package:munchkin_companion/features/player_session/application/player_session_controller.dart';
 import 'package:munchkin_companion/features/rules/application/rules_controller.dart';
 import 'package:munchkin_companion/features/rules/presentation/rules_search_screen.dart';
@@ -201,6 +203,17 @@ class _PlayerGameScreenState extends ConsumerState<PlayerGameScreen>
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<HostSessionState?>(hostSessionProvider, (prev, next) {
+      if (next != null && mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            settings: const RouteSettings(name: '/table'),
+            builder: (_) => const HostGameScreen(),
+          ),
+        );
+      }
+    });
+
     final clientState = ref.watch(clientSessionProvider);
     if (clientState == null) {
       return const Scaffold(

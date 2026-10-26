@@ -465,6 +465,7 @@ class _HostLobbyScreenState extends ConsumerState<HostLobbyScreen> {
                     onPressed: () {
                       Navigator.of(context).pushReplacement(
                         MaterialPageRoute(
+                          settings: const RouteSettings(name: '/table'),
                           builder: (_) => const HostGameScreen(),
                         ),
                       );

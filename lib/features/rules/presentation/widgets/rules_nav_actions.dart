@@ -29,7 +29,7 @@ class RulesNavActions extends StatelessWidget {
             icon: const Icon(Icons.table_restaurant, size: 20, color: AppColors.secondaryAmber),
             tooltip: 'Вернуться к столу',
             onPressed: () {
-              Navigator.of(context).popUntil((route) => route.isFirst);
+              Navigator.of(context).popUntil((route) => route.settings.name == '/table' || route.isFirst);
             },
           ),
       ],

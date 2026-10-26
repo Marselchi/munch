@@ -44,18 +44,19 @@ class ClientSessionState {
 
 class ClientSessionNotifier extends Notifier<ClientSessionState?> {
   ClientBeaconListener? _beaconListener;
+  ClientSessionEngine? _activeEngine;
 
   @override
   ClientSessionState? build() {
     ref.onDispose(() {
       _beaconListener?.stop();
-      state?.engine.dispose();
+      _activeEngine?.dispose();
       NetworkBinder.unbindFromNetwork();
     });
     return null;
   }
 
-  Future<void> joinSession({
+  Future<bool> joinSession({
     required String playerName,
     required List<String> hostIps,
     required int port,
@@ -103,6 +104,7 @@ class ClientSessionNotifier extends Notifier<ClientSessionState?> {
     };
     await beaconListener.start();
     _beaconListener = beaconListener;
+    _activeEngine = engine;
 
     state = ClientSessionState(
       engine: engine,
@@ -175,11 +177,11 @@ class ClientSessionNotifier extends Notifier<ClientSessionState?> {
       }
     };
 
-    await engine.start();
+    return await engine.start();
   }
 
-  void claimSeat(String playerId, [String? newName]) {
-    state?.engine.claimSeat(playerId: playerId, newName: newName);
+  Future<bool> claimSeat(String playerId, [String? newName]) async {
+    return await state?.engine.claimSeat(playerId: playerId, newName: newName) ?? false;
   }
 
   void fetchClaimableSeats() {
@@ -215,7 +217,8 @@ class ClientSessionNotifier extends Notifier<ClientSessionState?> {
     SettingsStore.clearActiveReconnectSession();
     _beaconListener?.stop();
     _beaconListener = null;
-    state?.engine.leave();
+    _activeEngine?.leave();
+    _activeEngine = null;
     NetworkBinder.unbindFromNetwork();
     state = null;
   }

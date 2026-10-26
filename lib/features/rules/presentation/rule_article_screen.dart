@@ -29,7 +29,7 @@ class RuleArticleScreen extends StatelessWidget {
             icon: const Icon(Icons.table_restaurant, color: AppColors.secondaryAmber),
             tooltip: 'Вернуться к столу',
             onPressed: () {
-              Navigator.of(context).popUntil((route) => route.isFirst);
+              Navigator.of(context).popUntil((route) => route.settings.name == '/table' || route.isFirst);
             },
           ),
           IconButton(
@@ -66,7 +66,7 @@ class RuleArticleScreen extends StatelessWidget {
               ElevatedButton.icon(
                 icon: const Icon(Icons.table_restaurant, size: 16),
                 label: const Text('К столу'),
-                onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
+                onPressed: () => Navigator.of(context).popUntil((r) => r.settings.name == '/table' || r.isFirst),
               ),
             ],
           ),

@@ -45,6 +45,7 @@ class ClientSessionEngine {
   Timer? _probeTimer;
   DateTime? _disconnectedSince;
   StreamSubscription? _streamSub;
+  Completer<bool>? _handshakeCompleter;
 
   // Pending level requests tracked by client
   final Set<String> _pendingRequestIds = {};
@@ -104,10 +105,20 @@ class ClientSessionEngine {
 
   bool isRequestPending(String reqId) => _pendingRequestIds.contains(reqId);
 
-  /// Initiates the connection flow.
-  Future<void> start() async {
+  /// Initiates the connection flow and awaits the server's handshake response
+  /// (joinAccept, syncSnapshot, or syncDelta). Returns true if successfully connected.
+  Future<bool> start() async {
     _setStatus(SyncConnectionStatus.reconnecting);
+    _handshakeCompleter = Completer<bool>();
     await _tryConnect();
+    try {
+      return await _handshakeCompleter!.future.timeout(
+        const Duration(seconds: 4),
+        onTimeout: () => false,
+      );
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<void> _tryConnect() async {
@@ -145,6 +156,9 @@ class ClientSessionEngine {
         final delay = _reconnectPolicy.nextDelay();
         _reconnectTimer = Timer(delay, () => _tryConnect());
       }
+      if (_handshakeCompleter != null && !_handshakeCompleter!.isCompleted) {
+        _handshakeCompleter!.complete(false);
+      }
     }
   }
 
@@ -152,6 +166,9 @@ class ClientSessionEngine {
     _cancelHandshakeTimer();
     _handshakeTimer = Timer(const Duration(seconds: 3), () {
       if (_status != SyncConnectionStatus.connected && !_isDisposed) {
+        if (_handshakeCompleter != null && !_handshakeCompleter!.isCompleted) {
+          _handshakeCompleter!.complete(false);
+        }
         _handleDisconnectAndReconnect();
       }
     });
@@ -207,6 +224,9 @@ class ClientSessionEngine {
             _node!.resetSnapshot(accept.snapshot);
           }
           _setStatus(SyncConnectionStatus.connected);
+          if (_handshakeCompleter != null && !_handshakeCompleter!.isCompleted) {
+            _handshakeCompleter!.complete(true);
+          }
           onStateUpdated?.call();
           break;
 
@@ -214,6 +234,9 @@ class ClientSessionEngine {
           _cancelHandshakeTimer();
           final reject = JoinReject.fromJson(envelope.data);
           _setStatus(SyncConnectionStatus.disconnected);
+          if (_handshakeCompleter != null && !_handshakeCompleter!.isCompleted) {
+            _handshakeCompleter!.complete(false);
+          }
           if (reject.claimableSeats.isNotEmpty) {
             onSeatTakeoverOffered?.call(reject.claimableSeats);
           }
@@ -280,6 +303,9 @@ class ClientSessionEngine {
             _node!.resetSnapshot(snapMsg.snapshot);
           }
           _setStatus(SyncConnectionStatus.connected);
+          if (_handshakeCompleter != null && !_handshakeCompleter!.isCompleted) {
+            _handshakeCompleter!.complete(true);
+          }
           onStateUpdated?.call();
           break;
 
@@ -292,6 +318,9 @@ class ClientSessionEngine {
             _applySyncEvent(ev);
           }
           _setStatus(SyncConnectionStatus.connected);
+          if (_handshakeCompleter != null && !_handshakeCompleter!.isCompleted) {
+            _handshakeCompleter!.complete(true);
+          }
           onStateUpdated?.call();
           break;
 
@@ -500,9 +529,18 @@ class ClientSessionEngine {
   }
 
   /// Claims an existing disconnected or local seat at the table.
-  void claimSeat({required String playerId, String? newName}) {
+  Future<bool> claimSeat({required String playerId, String? newName}) async {
     _playerId = playerId;
+    _handshakeCompleter = Completer<bool>();
     _sendClaim(playerId, newName ?? playerName);
+    try {
+      return await _handshakeCompleter!.future.timeout(
+        const Duration(seconds: 4),
+        onTimeout: () => false,
+      );
+    } catch (_) {
+      return false;
+    }
   }
 
   void _sendClaim(String playerId, String? newName) {
@@ -738,6 +776,9 @@ class ClientSessionEngine {
 
   void dispose() {
     _isDisposed = true;
+    if (_handshakeCompleter != null && !_handshakeCompleter!.isCompleted) {
+      _handshakeCompleter!.complete(false);
+    }
     _cancelHandshakeTimer();
     _cancelFailoverTimer();
     _heartbeat.stop();

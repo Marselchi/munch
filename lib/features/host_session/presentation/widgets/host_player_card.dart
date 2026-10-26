@@ -17,6 +17,8 @@ class HostPlayerCard extends StatelessWidget {
   final void Function(int newGear) onUpdateGear;
   final VoidCallback? onEditTraits;
   final VoidCallback? onKickPlayer;
+  final VoidCallback? onTransferHost;
+  final VoidCallback? onNominateDeputy;
 
   const HostPlayerCard({
     super.key,
@@ -28,6 +30,8 @@ class HostPlayerCard extends StatelessWidget {
     required this.onUpdateGear,
     this.onEditTraits,
     this.onKickPlayer,
+    this.onTransferHost,
+    this.onNominateDeputy,
   });
 
   Color _getAvatarColor(String id) {
@@ -171,7 +175,7 @@ class HostPlayerCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (!isHostPlayer && onKickPlayer != null) ...[
+                if (!isHostPlayer && (onKickPlayer != null || onTransferHost != null || onNominateDeputy != null)) ...[
                   IconButton(
                     icon: const Icon(Icons.more_vert, color: AppColors.textMuted),
                     onPressed: () {
@@ -416,14 +420,35 @@ class HostPlayerCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              leading: const Icon(Icons.person_remove, color: AppColors.accentCrimson),
-              title: Text('Исключить игрока "${player.name}"'),
-              onTap: () {
-                Navigator.of(ctx).pop();
-                onKickPlayer?.call();
-              },
-            ),
+            if (onNominateDeputy != null)
+              ListTile(
+                leading: const Icon(Icons.star_outline, color: AppColors.primaryGold),
+                title: Text('Назначить "${player.name}" заместителем'),
+                subtitle: const Text('Кандидат на сервер при отключении хоста'),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  onNominateDeputy?.call();
+                },
+              ),
+            if (onTransferHost != null)
+              ListTile(
+                leading: const Icon(Icons.swap_horiz, color: AppColors.secondaryAmber),
+                title: Text('Сделать "${player.name}" ведущим стола'),
+                subtitle: const Text('Передать роль хоста и управление игрой'),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  onTransferHost?.call();
+                },
+              ),
+            if (onKickPlayer != null)
+              ListTile(
+                leading: const Icon(Icons.person_remove, color: AppColors.accentCrimson),
+                title: Text('Исключить игрока "${player.name}"'),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  onKickPlayer?.call();
+                },
+              ),
           ],
         ),
       ),

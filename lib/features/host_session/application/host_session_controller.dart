@@ -8,6 +8,7 @@ import '../../../sync/node/host_role.dart';
 import '../../../sync/protocol/models.dart';
 import '../../../sync/server/host_session_engine.dart';
 import '../../../sync/server/ws_server.dart';
+import '../../player_session/application/player_session_controller.dart';
 
 class HostSessionState {
   final HostSessionEngine engine;
@@ -43,13 +44,15 @@ class HostSessionState {
 
 class HostSessionNotifier extends Notifier<HostSessionState?> {
   HostBeaconBroadcaster? _broadcaster;
+  HostSessionEngine? _activeEngine;
+  HostWebSocketServer? _activeServer;
 
   @override
   HostSessionState? build() {
     ref.onDispose(() {
       _broadcaster?.stop();
-      state?.engine.dispose();
-      state?.server.stop();
+      _activeEngine?.dispose();
+      _activeServer?.stop();
       NetworkBinder.unbindFromNetwork();
     });
     return null;
@@ -104,6 +107,8 @@ class HostSessionNotifier extends Notifier<HostSessionState?> {
       port: actualPort,
     ));
     _broadcaster = broadcaster;
+    _activeEngine = engine;
+    _activeServer = server;
 
     state = HostSessionState(
       engine: engine,
@@ -117,6 +122,31 @@ class HostSessionNotifier extends Notifier<HostSessionState?> {
     engine.onStateUpdated = () {
       if (state != null) {
         state = state!.copyWith(updateTick: state!.updateTick + 1);
+      }
+    };
+
+    engine.onHostDemoted = (hostChanged) async {
+      final hostPlayerId = engine.hostPlayerId;
+      final hostPlayer = engine.getPlayer(hostPlayerId);
+      final pName = hostPlayer?.name ?? engine.hostPlayerName;
+      final seat = engine.node.seats.where((s) => s.playerId == hostPlayerId).firstOrNull;
+      final token = seat?.token;
+
+      await _broadcaster?.stop();
+      _broadcaster = null;
+      await server.stop();
+      _activeEngine = null;
+      _activeServer = null;
+      state = null;
+
+      if (hostChanged.ips.isNotEmpty) {
+        ref.read(clientSessionProvider.notifier).joinSession(
+          playerName: pName,
+          hostIps: hostChanged.ips,
+          port: hostChanged.port,
+          playerId: hostPlayerId,
+          token: token,
+        );
       }
     };
   }
@@ -150,6 +180,8 @@ class HostSessionNotifier extends Notifier<HostSessionState?> {
       port: server.port,
     ));
     _broadcaster = broadcaster;
+    _activeEngine = hostEngine;
+    _activeServer = server;
 
     state = HostSessionState(
       engine: hostEngine,
@@ -162,6 +194,31 @@ class HostSessionNotifier extends Notifier<HostSessionState?> {
     hostEngine.onStateUpdated = () {
       if (state != null) {
         state = state!.copyWith(updateTick: state!.updateTick + 1);
+      }
+    };
+
+    hostEngine.onHostDemoted = (hostChanged) async {
+      final hostPlayerId = hostEngine.hostPlayerId;
+      final hostPlayer = hostEngine.getPlayer(hostPlayerId);
+      final pName = hostPlayer?.name ?? hostEngine.hostPlayerName;
+      final seat = hostEngine.node.seats.where((s) => s.playerId == hostPlayerId).firstOrNull;
+      final token = seat?.token;
+
+      await _broadcaster?.stop();
+      _broadcaster = null;
+      await server.stop();
+      _activeEngine = null;
+      _activeServer = null;
+      state = null;
+
+      if (hostChanged.ips.isNotEmpty) {
+        ref.read(clientSessionProvider.notifier).joinSession(
+          playerName: pName,
+          hostIps: hostChanged.ips,
+          port: hostChanged.port,
+          playerId: hostPlayerId,
+          token: token,
+        );
       }
     };
   }
@@ -248,6 +305,8 @@ class HostSessionNotifier extends Notifier<HostSessionState?> {
       await state!.server.stop();
       await SessionSnapshotStore.deleteSnapshot(sid);
       await NetworkBinder.unbindFromNetwork();
+      _activeEngine = null;
+      _activeServer = null;
       state = null;
     }
   }

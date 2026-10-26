@@ -26,7 +26,7 @@ class EntityDetailScreen extends StatelessWidget {
             icon: const Icon(Icons.table_restaurant, color: AppColors.secondaryAmber),
             tooltip: 'Вернуться к столу',
             onPressed: () {
-              Navigator.of(context).popUntil((route) => route.isFirst);
+              Navigator.of(context).popUntil((route) => route.settings.name == '/table' || route.isFirst);
             },
           ),
         ],
@@ -54,7 +54,7 @@ class EntityDetailScreen extends StatelessWidget {
                 ),
                 icon: const Icon(Icons.table_restaurant, size: 16),
                 label: const Text('К столу', style: TextStyle(fontWeight: FontWeight.bold)),
-                onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
+                onPressed: () => Navigator.of(context).popUntil((r) => r.settings.name == '/table' || r.isFirst),
               ),
             ],
           ),

@@ -34,6 +34,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _checkResumableSessions();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _checkResumableSessions();
+  }
+
   Future<void> _checkResumableSessions() async {
     try {
       final hostSnap = await SessionSnapshotStore.getLatestActiveSnapshot();
@@ -78,7 +84,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                 if (mounted) {
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const HostLobbyScreen()),
+                    MaterialPageRoute(
+                      settings: const RouteSettings(name: '/table'),
+                      builder: (_) => const HostLobbyScreen(),
+                    ),
                   );
                 }
               } catch (e) {
@@ -114,7 +123,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
       if (mounted) {
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const HostGameScreen()),
+          MaterialPageRoute(
+            settings: const RouteSettings(name: '/table'),
+            builder: (_) => const HostGameScreen(),
+          ),
         );
       }
     } catch (e) {
@@ -258,7 +270,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
 
     try {
-      await ref.read(clientSessionProvider.notifier).joinSession(
+      final connected = await ref.read(clientSessionProvider.notifier).joinSession(
             playerName: playerName,
             hostIps: hostIps,
             port: port,
@@ -271,9 +283,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Navigator.of(context).pop(); // Dismiss loading
 
         final clientState = ref.read(clientSessionProvider);
-        if (clientState?.connectionStatus == SyncConnectionStatus.connected) {
+        if (connected || clientState?.connectionStatus == SyncConnectionStatus.connected) {
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const PlayerGameScreen()),
+            MaterialPageRoute(
+              settings: const RouteSettings(name: '/table'),
+              builder: (_) => const PlayerGameScreen(),
+            ),
           );
         } else if (clientState != null && clientState.claimableSeats.isNotEmpty) {
           _showSeatTakeoverDialog(
@@ -286,6 +301,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(clientState!.lastErrorMessage!),
+              backgroundColor: AppColors.accentCrimson,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Не удалось подключиться к столу. Проверьте адрес или повторите попытку.'),
               backgroundColor: AppColors.accentCrimson,
             ),
           );
@@ -391,6 +413,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final activeHost = ref.watch(hostSessionProvider);
+    final activeClient = ref.watch(clientSessionProvider);
+
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -415,8 +440,154 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   const Spacer(),
 
+                  // Live active host session card
+                  if (activeHost != null) ...[
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Row(
+                              children: [
+                                Icon(Icons.table_restaurant, color: AppColors.primaryGold, size: 20),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Активный стол (Ведущий)',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Стол: ${activeHost.engine.snapshot.name} • Игроков: ${activeHost.engine.snapshot.players.length}',
+                              style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                            ),
+                            const SizedBox(height: 12),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: Wrap(
+                                alignment: WrapAlignment.end,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  TextButton(
+                                    onPressed: () async {
+                                      await ref.read(hostSessionProvider.notifier).endSession();
+                                      await _checkResumableSessions();
+                                    },
+                                    child: const Text('Завершить стол', style: TextStyle(color: AppColors.accentCrimson)),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          settings: const RouteSettings(name: '/table'),
+                                          builder: (_) => const HostGameScreen(),
+                                        ),
+                                      );
+                                    },
+                                    child: const Text('Вернуться за стол'),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+
+                  // Live active player session card
+                  if (activeClient != null &&
+                      activeClient.connectionStatus != SyncConnectionStatus.disconnected &&
+                      activeHost == null) ...[
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  activeClient.connectionStatus == SyncConnectionStatus.connected
+                                      ? Icons.wifi
+                                      : Icons.wifi_off,
+                                  color: activeClient.connectionStatus == SyncConnectionStatus.connected
+                                      ? AppColors.statusConnected
+                                      : AppColors.statusReconnecting,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Активное подключение (Игрок)',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Персонаж: ${activeClient.engine.selfPlayer?.name ?? activeClient.engine.playerName}',
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13,
+                              ),
+                            ),
+                            if (activeClient.engine.snapshot?.name != null)
+                              Text(
+                                'Стол: ${activeClient.engine.snapshot!.name}',
+                                style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                              ),
+                            const SizedBox(height: 12),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: Wrap(
+                                alignment: WrapAlignment.end,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  TextButton(
+                                    onPressed: () {
+                                      ref.read(clientSessionProvider.notifier).leaveSession();
+                                    },
+                                    child: const Text('Покинуть стол', style: TextStyle(color: AppColors.accentCrimson)),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          settings: const RouteSettings(name: '/table'),
+                                          builder: (_) => const PlayerGameScreen(),
+                                        ),
+                                      );
+                                    },
+                                    child: const Text('Вернуться за стол'),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+
                   // Resumable session card
-                  if (_resumableHostSnapshot != null) ...[
+                  if (activeHost == null && activeClient == null && _resumableHostSnapshot != null) ...[
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(14),
@@ -469,7 +640,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ],
 
                   // Resume player session if any
-                  if (_resumablePlayerSession != null && _resumableHostSnapshot == null) ...[
+                  if (activeHost == null && activeClient == null && _resumablePlayerSession != null && _resumableHostSnapshot == null) ...[
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(14),

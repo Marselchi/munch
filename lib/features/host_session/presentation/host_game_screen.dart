@@ -8,6 +8,9 @@ import 'package:munchkin_companion/core/theme/app_colors.dart';
 import 'package:munchkin_companion/core/widgets/latest_change_banner.dart';
 import 'package:munchkin_companion/core/widgets/traits_picker_sheet.dart';
 import 'package:munchkin_companion/features/host_session/application/host_session_controller.dart';
+import 'package:munchkin_companion/features/player_session/application/player_session_controller.dart';
+import 'package:munchkin_companion/features/player_session/presentation/player_game_screen.dart';
+import 'package:munchkin_companion/sync/common/connection_status.dart';
 import 'package:munchkin_companion/features/level_history/presentation/history_screen.dart';
 import 'package:munchkin_companion/features/rules/application/rules_controller.dart';
 import 'package:munchkin_companion/features/rules/presentation/rules_search_screen.dart';
@@ -85,6 +88,38 @@ class _HostGameScreenState extends ConsumerState<HostGameScreen> {
           getPlayerName: (id) => engine?.getPlayer(id)?.name ?? 'Игрок',
         ),
       ),
+    );
+  }
+
+  void _confirmTransferHost(String playerId, String playerName) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Передать стол?'),
+        content: Text(
+          'Вы действительно хотите сделать игрока "$playerName" новым ведущим стола? Роль хоста и управление сессией перейдут к нему.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Отмена'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              ref.read(hostSessionProvider.notifier).transferHost(playerId);
+            },
+            child: const Text('Передать'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _nominateDeputy(String playerId, String playerName) {
+    ref.read(hostSessionProvider.notifier).nominateDeputy(playerId);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$playerName назначен заместителем ведущего')),
     );
   }
 
@@ -233,6 +268,17 @@ class _HostGameScreenState extends ConsumerState<HostGameScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<ClientSessionState?>(clientSessionProvider, (prev, next) {
+      if (next?.connectionStatus == SyncConnectionStatus.connected && mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            settings: const RouteSettings(name: '/table'),
+            builder: (_) => const PlayerGameScreen(),
+          ),
+        );
+      }
+    });
+
     final hostState = ref.watch(hostSessionProvider);
     if (hostState == null) {
       return const Scaffold(
@@ -440,6 +486,12 @@ class _HostGameScreenState extends ConsumerState<HostGameScreen> {
                         .updateGearPower(player.id, newGear);
                   },
                   onEditTraits: () => _showTraitsPicker(player.id),
+                  onTransferHost: !isHost && !isDisconnected
+                      ? () => _confirmTransferHost(player.id, player.name)
+                      : null,
+                  onNominateDeputy: !isHost
+                      ? () => _nominateDeputy(player.id, player.name)
+                      : null,
                   onKickPlayer: !isHost
                       ? () => ref
                           .read(hostSessionProvider.notifier)
