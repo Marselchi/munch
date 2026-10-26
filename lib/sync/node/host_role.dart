@@ -15,7 +15,6 @@ class PendingLevelRequest {
   final int? setValue;
   final LevelReason reason;
   final DateTime createdAt;
-  final DateTime expiresAt;
 
   PendingLevelRequest({
     required this.reqId,
@@ -24,12 +23,10 @@ class PendingLevelRequest {
     this.setValue,
     required this.reason,
     DateTime? createdAt,
-  })  : createdAt = createdAt ?? DateTime.now(),
-        expiresAt = (createdAt ?? DateTime.now()).add(AppConstants.requestExpiry);
+  }) : createdAt = createdAt ?? DateTime.now();
 
-  bool get isExpired => DateTime.now().isAfter(expiresAt);
-  int get remainingSeconds =>
-      expiresAt.difference(DateTime.now()).inSeconds.clamp(0, 60);
+  bool get isExpired => false;
+  int get remainingSeconds => 0;
 }
 
 class JoinApprovalRequest {
@@ -62,7 +59,6 @@ class HostRole {
 
   void Function(HostChanged event)? onHostDemoted;
 
-  Timer? _requestExpirationTimer;
   Timer? _debounceSaveTimer;
 
   List<PendingLevelRequest> get pendingRequests =>
@@ -133,15 +129,9 @@ class HostRole {
       _node?.onStateUpdated?.call();
     };
 
-    _requestExpirationTimer?.cancel();
-    _requestExpirationTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      _checkExpiredRequests();
-    });
   }
 
   void _stopTimers() {
-    _requestExpirationTimer?.cancel();
-    _requestExpirationTimer = null;
     _debounceSaveTimer?.cancel();
     _debounceSaveTimer = null;
   }
@@ -451,16 +441,7 @@ class HostRole {
   }
 
   void _checkExpiredRequests() {
-    final expired = <String>[];
-    for (final req in _pendingRequests.values) {
-      if (req.isExpired) {
-        expired.add(req.reqId);
-      }
-    }
-
-    for (final id in expired) {
-      denyRequest(id, 'Время ожидания решения ведущего истекло.');
-    }
+    // Requests do not expire automatically; host explicitly approves or denies them.
   }
 
   // --- Incoming Connections & Messaging ---
@@ -638,6 +619,8 @@ class HostRole {
       }
     }
     _scheduleSnapshotSave();
+    final snapMsg = SyncSnapshotMsg(snapshot: node.snapshot);
+    _sendDirect(channel, MessageType.syncSnapshot, snapMsg.toJson());
     node.onStateUpdated?.call();
   }
 
@@ -807,11 +790,9 @@ class HostRole {
         MessageType.syncPushRequest,
         SyncPushRequest(hostSeq: node.currentSeq).toJson(),
       );
-    } else if (req.lastSeq >= 0 && req.lastSeq <= node.currentSeq) {
-      final missedEvents = node.eventLog.eventsAfter(req.lastSeq);
-      final deltaMsg = SyncDeltaMsg(events: missedEvents);
-      _sendDirect(channel, MessageType.syncDelta, deltaMsg.toJson());
     } else {
+      // Send full authoritative snapshot on rejoin to guarantee all players,
+      // levels, traits, and event history are 100% restored on the client.
       final snapMsg = SyncSnapshotMsg(snapshot: node.snapshot);
       _sendDirect(channel, MessageType.syncSnapshot, snapMsg.toJson());
     }

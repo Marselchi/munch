@@ -106,7 +106,7 @@ class PendingRequestsCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            '${req.reason.localizedTitle} • осталось ${req.remainingSeconds}с',
+                            req.reason.localizedTitle,
                             style: const TextStyle(
                               fontSize: 12,
                               color: AppColors.textSecondary,

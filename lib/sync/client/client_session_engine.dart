@@ -100,8 +100,21 @@ class ClientSessionEngine {
     _node = SessionNode(initialSnapshot: snapshot);
   }
   List<Player> get players => snapshot?.players ?? const [];
-  Player? get selfPlayer =>
-      _playerId != null ? snapshot?.players.where((p) => p.id == _playerId).firstOrNull : null;
+  Player? get selfPlayer {
+    if (snapshot == null) return null;
+    if (_playerId != null) {
+      final p = snapshot!.players.where((p) => p.id == _playerId).firstOrNull;
+      if (p != null) return p;
+    }
+    if (playerName.isNotEmpty) {
+      final matches = snapshot!.players.where((p) => p.name == playerName);
+      if (matches.length == 1) {
+        _playerId ??= matches.first.id;
+        return matches.first;
+      }
+    }
+    return null;
+  }
 
   bool isRequestPending(String reqId) => _pendingRequestIds.contains(reqId);
 
@@ -433,6 +446,9 @@ class ClientSessionEngine {
   }
 
   void _applySyncEvent(SyncEvent event) {
+    if (_node == null && _snapshot != null) {
+      _node = SessionNode(initialSnapshot: _snapshot!);
+    }
     if (_node != null) {
       _node!.apply(event);
       _snapshot = _node!.snapshot;

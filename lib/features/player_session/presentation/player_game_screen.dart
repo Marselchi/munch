@@ -6,7 +6,6 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:munchkin_companion/core/constants/app_constants.dart';
 import 'package:munchkin_companion/core/theme/app_colors.dart';
 import 'package:munchkin_companion/core/widgets/latest_change_banner.dart';
-import 'package:munchkin_companion/core/widgets/status_chip.dart';
 import 'package:munchkin_companion/core/widgets/traits_picker_sheet.dart';
 import 'package:munchkin_companion/features/level_history/presentation/history_screen.dart';
 import 'package:munchkin_companion/features/host_session/application/host_session_controller.dart';
@@ -228,12 +227,6 @@ class _PlayerGameScreenState extends ConsumerState<PlayerGameScreen>
     final engine = clientState.engine;
     final maxLevel = engine.snapshot?.settings.maxLevel ?? AppConstants.defaultMaxLevel;
 
-    // Convert connection enum to chip status
-    final chipStatus = switch (connectionStatus) {
-      SyncConnectionStatus.connected => ConnectionStateStatus.connected,
-      SyncConnectionStatus.reconnecting => ConnectionStateStatus.reconnecting,
-      SyncConnectionStatus.disconnected => ConnectionStateStatus.disconnected,
-    };
 
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -331,49 +324,61 @@ class _PlayerGameScreenState extends ConsumerState<PlayerGameScreen>
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  StatusChip(
-                    status: chipStatus,
-                    onTap: () {
-                      if (connectionStatus != SyncConnectionStatus.connected) {
-                        ref.read(clientSessionProvider.notifier).retryReconnect();
-                      }
-                    },
-                  ),
-                ],
-              ),
-            ),
           // Reconnection banner if reconnecting
           if (connectionStatus == SyncConnectionStatus.reconnecting) ...[
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-              color: AppColors.secondaryAmber.withOpacity(0.2),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 12,
-                    height: 12,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppColors.secondaryAmber,
+            InkWell(
+              onTap: () => ref.read(clientSessionProvider.notifier).retryReconnect(),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+                color: AppColors.secondaryAmber.withOpacity(0.2),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 12,
+                      height: 12,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.secondaryAmber,
+                      ),
                     ),
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Связь потеряна. Автоматическое переподключение…',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.secondaryAmber,
+                    SizedBox(width: 8),
+                    Text(
+                      'Связь потеряна. Автоматическое переподключение…',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.secondaryAmber,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
+              ),
+            ),
+          ],
+          if (connectionStatus == SyncConnectionStatus.disconnected) ...[
+            InkWell(
+              onTap: () => ref.read(clientSessionProvider.notifier).retryReconnect(),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+                color: AppColors.accentCrimson.withOpacity(0.2),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.refresh, size: 14, color: AppColors.accentCrimson),
+                    SizedBox(width: 8),
+                    Text(
+                      'Связь потеряна. Нажмите для переподключения',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.accentCrimson,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -501,23 +506,66 @@ class _PlayerGameScreenState extends ConsumerState<PlayerGameScreen>
                               ],
                             ),
                           ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                'Ур. ${other.level} (+${other.gearPower})',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: AppColors.textSecondary,
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryGold.withOpacity(0.18),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: AppColors.primaryGold.withOpacity(0.7),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Text(
+                                      'УРОВЕНЬ',
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.5,
+                                        color: AppColors.primaryGold,
+                                      ),
+                                    ),
+                                    Text(
+                                      '${other.level}',
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w900,
+                                        color: AppColors.textPrimary,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              Text(
-                                'Сила: ${other.totalPower}',
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.primaryGold,
-                                ),
+                              const SizedBox(width: 10),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'Сила ${other.totalPower}',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Шмот +${other.gearPower}',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
