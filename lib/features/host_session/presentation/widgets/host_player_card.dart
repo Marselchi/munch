@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../sync/protocol/models.dart';
+import 'package:munchkin_companion/features/player_session/presentation/widgets/trait_tooltip_chip.dart';
 import 'level_change_sheet.dart';
 
 class HostPlayerCard extends StatelessWidget {
@@ -383,16 +384,7 @@ class HostPlayerCard extends StatelessWidget {
                 runSpacing: 4,
                 children: [
                   ...player.traitIds.map(
-                    (trait) => Chip(
-                      label: Text(
-                        trait,
-                        style: const TextStyle(fontSize: 11),
-                      ),
-                      visualDensity: VisualDensity.compact,
-                      padding: EdgeInsets.zero,
-                      backgroundColor: AppColors.darkSurface,
-                      side: const BorderSide(color: AppColors.darkCardBorder),
-                    ),
+                    (trait) => TraitTooltipChip(traitName: trait),
                   ),
                   if (onEditTraits != null)
                     ActionChip(

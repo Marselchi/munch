@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:munch/features/rules/data/bundle_validator.dart';
-import 'package:munch/features/rules/domain/rules_entities.dart';
+import 'package:munchkin_companion/features/rules/data/bundle_validator.dart';
+import 'package:munchkin_companion/features/rules/domain/rules_entities.dart';
 
 void main() {
   group('Bundled rules packs JSON validation', () {

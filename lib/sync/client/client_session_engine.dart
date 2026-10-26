@@ -3,10 +3,14 @@ import 'package:uuid/uuid.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../../core/constants/app_constants.dart';
 import '../common/connection_status.dart';
+import '../common/discovery_beacon.dart';
 import '../common/event_log.dart';
+import '../node/host_role.dart';
+import '../node/session_node.dart';
 import '../protocol/envelope.dart';
 import '../protocol/messages.dart';
 import '../protocol/models.dart';
+import '../server/ws_server.dart';
 import 'heartbeat.dart';
 import 'reconnect_policy.dart';
 import 'ws_client.dart';
@@ -16,22 +20,30 @@ import 'ws_client.dart';
 /// Pure Dart (no Flutter imports).
 class ClientSessionEngine {
   final String playerName;
-  final List<String> hostIps;
-  final int port;
+  List<String> hostIps;
+  int port;
   final String? initialToken;
   final String? initialPlayerId;
+  final String? claimPlayerId;
+  final List<String> listenIps;
+  final int? listenPort;
 
   final WebSocketClient _client = WebSocketClient();
   late final ReconnectPolicy _reconnectPolicy;
   late final ClientHeartbeat _heartbeat;
-  final EventLog eventLog = EventLog();
+  final EventLog _fallbackLog = EventLog();
 
+  SessionNode? _node;
   SyncConnectionStatus _status = SyncConnectionStatus.disconnected;
   SessionSnapshot? _snapshot;
   String? _playerId;
   String? _token;
   bool _isDisposed = false;
   Timer? _reconnectTimer;
+  Timer? _handshakeTimer;
+  Timer? _failoverTimer;
+  Timer? _probeTimer;
+  DateTime? _disconnectedSince;
   StreamSubscription? _streamSub;
 
   // Pending level requests tracked by client
@@ -41,9 +53,14 @@ class ClientSessionEngine {
   void Function(SyncConnectionStatus status)? onStatusChanged;
   void Function()? onStateUpdated;
   void Function(String code, String message)? onJoinRejected;
+  void Function(List<ClaimableSeat> claimableSeats)? onSeatTakeoverOffered;
+  void Function(List<ClaimableSeat> seats)? onClaimableSeatsReceived;
   void Function(String reason)? onSessionEnded;
   void Function(String reqId, String? message)? onLevelRequestDenied;
   void Function(String reqId)? onLevelRequestAcked;
+  void Function(HostChanged event)? onHostChanged;
+  Future<HostWebSocketServer> Function()? onStartLocalServer;
+  void Function(HostWebSocketServer server, HostRole hostRole)? onPromotedToHost;
 
   ClientSessionEngine({
     required this.playerName,
@@ -51,9 +68,15 @@ class ClientSessionEngine {
     this.port = AppConstants.defaultPort,
     this.initialToken,
     this.initialPlayerId,
+    this.claimPlayerId,
+    this.listenIps = const [],
+    this.listenPort,
+    this.onStartLocalServer,
+    this.onPromotedToHost,
+    this.onHostChanged,
   }) {
     _token = initialToken;
-    _playerId = initialPlayerId;
+    _playerId = initialPlayerId ?? claimPlayerId;
     _reconnectPolicy = ReconnectPolicy(hostIps: hostIps, port: port);
 
     _heartbeat = ClientHeartbeat(
@@ -65,12 +88,19 @@ class ClientSessionEngine {
   }
 
   SyncConnectionStatus get status => _status;
-  SessionSnapshot? get snapshot => _snapshot;
+  SessionSnapshot? get snapshot => _node?.snapshot ?? _snapshot;
+  SessionNode? get node => _node;
+  EventLog get eventLog => _node?.eventLog ?? _fallbackLog;
   String? get playerId => _playerId;
   String? get token => _token;
-  List<Player> get players => _snapshot?.players ?? const [];
+
+  void setInitialSnapshotForTesting(SessionSnapshot snapshot) {
+    _snapshot = snapshot;
+    _node = SessionNode(initialSnapshot: snapshot);
+  }
+  List<Player> get players => snapshot?.players ?? const [];
   Player? get selfPlayer =>
-      _playerId != null ? _snapshot?.players.firstWhere((p) => p.id == _playerId, orElse: () => Player(id: _playerId!, name: playerName)) : null;
+      _playerId != null ? snapshot?.players.where((p) => p.id == _playerId).firstOrNull : null;
 
   bool isRequestPending(String reqId) => _pendingRequestIds.contains(reqId);
 
@@ -83,17 +113,27 @@ class ClientSessionEngine {
   Future<void> _tryConnect() async {
     if (_isDisposed) return;
     _reconnectTimer?.cancel();
+    _cancelHandshakeTimer();
 
     try {
-      final ip = _reconnectPolicy.nextIp();
-      final channel = await _client.connectSingle(ip, port);
+      // Race candidate IPs concurrently with fast ~1s timeout
+      final (channel, _) = await _client.raceCandidates(
+        hostIps,
+        port,
+        timeout: const Duration(milliseconds: 1200),
+      );
 
       _reconnectPolicy.reset();
       _heartbeat.start();
       _listenToChannel(channel);
 
-      // Perform handshake: Join or Rejoin
-      if (_playerId != null && _token != null) {
+      // Start 3-second handshake timeout
+      _startHandshakeTimer();
+
+      // Perform handshake: Claim, Rejoin, or Join
+      if (claimPlayerId != null && _token == null) {
+        _sendClaim(claimPlayerId!, playerName);
+      } else if (_playerId != null && _token != null) {
         _sendRejoin();
       } else {
         _sendJoin();
@@ -106,6 +146,20 @@ class ClientSessionEngine {
         _reconnectTimer = Timer(delay, () => _tryConnect());
       }
     }
+  }
+
+  void _startHandshakeTimer() {
+    _cancelHandshakeTimer();
+    _handshakeTimer = Timer(const Duration(seconds: 3), () {
+      if (_status != SyncConnectionStatus.connected && !_isDisposed) {
+        _handleDisconnectAndReconnect();
+      }
+    });
+  }
+
+  void _cancelHandshakeTimer() {
+    _handshakeTimer?.cancel();
+    _handshakeTimer = null;
   }
 
   void _listenToChannel(WebSocketChannel channel) {
@@ -126,38 +180,113 @@ class ClientSessionEngine {
     try {
       final envelope = Envelope.decode(rawJson);
 
+      // Validate sid on messages if session snapshot is already known
+      if (_snapshot != null &&
+          envelope.sid.isNotEmpty &&
+          envelope.sid != _snapshot!.sessionId) {
+        return;
+      }
+
+      // Epoch fencing: ignore messages with lower epoch
+      if (envelope.epoch < (_node?.epoch ?? 0)) {
+        return;
+      }
+
       switch (envelope.type) {
         case MessageType.joinAccept:
+          _cancelHandshakeTimer();
+          _cancelFailoverTimer();
+          _disconnectedSince = null;
           final accept = JoinAccept.fromJson(envelope.data);
           _playerId = accept.playerId;
           _token = accept.token;
           _snapshot = accept.snapshot;
-          eventLog.clear();
-          for (final ev in accept.snapshot.events) {
-            eventLog.append(ev);
+          if (_node == null) {
+            _node = SessionNode(initialSnapshot: accept.snapshot);
+          } else {
+            _node!.resetSnapshot(accept.snapshot);
           }
           _setStatus(SyncConnectionStatus.connected);
           onStateUpdated?.call();
           break;
 
         case MessageType.joinReject:
+          _cancelHandshakeTimer();
           final reject = JoinReject.fromJson(envelope.data);
           _setStatus(SyncConnectionStatus.disconnected);
+          if (reject.claimableSeats.isNotEmpty) {
+            onSeatTakeoverOffered?.call(reject.claimableSeats);
+          }
           onJoinRejected?.call(reject.code, reject.message);
           break;
 
+        case MessageType.seatsListResponse:
+          final resp = SeatsListResponse.fromJson(envelope.data);
+          onClaimableSeatsReceived?.call(resp.seats);
+          break;
+
+        case MessageType.seatClaimed:
+          final event = SeatClaimed(
+            seq: envelope.data['seq'] as int,
+            eventId: envelope.data['eventId'] as String,
+            ts: DateTime.fromMillisecondsSinceEpoch(envelope.data['ts'] as int),
+            playerId: envelope.data['playerId'] as String,
+          );
+          _applySyncEvent(event);
+          onStateUpdated?.call();
+          break;
+
+        case MessageType.rosterUpdate:
+          final rMsg = RosterUpdateMsg.fromJson(envelope.data);
+          _node?.updateRoster(rMsg.roster);
+          onStateUpdated?.call();
+          break;
+
+        case MessageType.syncPushRequest:
+          final req = SyncPushRequest.fromJson(envelope.data);
+          final missingEvents = eventLog.eventsAfter(req.hostSeq);
+          _sendEnvelope(MessageType.syncPush, SyncPushMsg(events: missingEvents).toJson());
+          break;
+
+        case MessageType.hostTransfer:
+          final transfer = HostTransferMsg.fromJson(envelope.data);
+          if (transfer.targetPlayerId == _playerId) {
+            _handlePromotedToHost(transfer.nextEpoch, transfer.seats);
+          }
+          break;
+
+        case MessageType.hostChanged:
+          final event = HostChanged(
+            seq: envelope.data['seq'] as int? ?? (_node?.currentSeq ?? 0) + 1,
+            eventId: envelope.data['eventId'] as String? ?? envelope.id,
+            ts: DateTime.fromMillisecondsSinceEpoch(envelope.data['ts'] as int? ?? envelope.ts),
+            epoch: envelope.data['epoch'] as int,
+            newHostPlayerId: envelope.data['newHostPlayerId'] as String,
+            ips: (envelope.data['ips'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? const [],
+            port: envelope.data['port'] as int? ?? AppConstants.defaultPort,
+          );
+          _handleHostChanged(event);
+          break;
+
         case MessageType.syncSnapshot:
+          _cancelHandshakeTimer();
+          _cancelFailoverTimer();
+          _disconnectedSince = null;
           final snapMsg = SyncSnapshotMsg.fromJson(envelope.data);
           _snapshot = snapMsg.snapshot;
-          eventLog.clear();
-          for (final ev in snapMsg.snapshot.events) {
-            eventLog.append(ev);
+          if (_node == null) {
+            _node = SessionNode(initialSnapshot: snapMsg.snapshot);
+          } else {
+            _node!.resetSnapshot(snapMsg.snapshot);
           }
           _setStatus(SyncConnectionStatus.connected);
           onStateUpdated?.call();
           break;
 
         case MessageType.syncDelta:
+          _cancelHandshakeTimer();
+          _cancelFailoverTimer();
+          _disconnectedSince = null;
           final deltaMsg = SyncDeltaMsg.fromJson(envelope.data);
           for (final ev in deltaMsg.events) {
             _applySyncEvent(ev);
@@ -269,94 +398,21 @@ class ClientSessionEngine {
           break;
 
         case MessageType.heartbeatPong:
-          // Pong received, activity recorded
           break;
       }
     } catch (_) {}
   }
 
   void _applySyncEvent(SyncEvent event) {
-    eventLog.append(event);
+    if (_node != null) {
+      _node!.apply(event);
+      _snapshot = _node!.snapshot;
+    } else {
+      _fallbackLog.append(event);
+    }
 
-    if (_snapshot == null) return;
-
-    switch (event) {
-      case LevelApplied(:final targetPlayerId, :final newLevel):
-        final updatedPlayers = _snapshot!.players.map((p) {
-          return p.id == targetPlayerId ? p.copyWith(level: newLevel) : p;
-        }).toList();
-        _snapshot = _snapshot!.copyWith(
-          seq: event.seq,
-          players: updatedPlayers,
-        );
-        // Clear pending request if it matches
-        _pendingRequestIds.clear();
-        break;
-
-      case LevelUndone(:final targetChangeId, :final restoredLevel):
-        final appliedList = eventLog.events
-            .whereType<LevelApplied>()
-            .where((e) => e.eventId == targetChangeId)
-            .toList();
-        if (appliedList.isNotEmpty) {
-          final applied = appliedList.first;
-          final updatedPlayers = _snapshot!.players.map((p) {
-            return p.id == applied.targetPlayerId
-                ? p.copyWith(level: restoredLevel)
-                : p;
-          }).toList();
-          _snapshot = _snapshot!.copyWith(
-            seq: event.seq,
-            players: updatedPlayers,
-          );
-        }
-        break;
-
-      case PlayerJoined(:final player):
-        if (!_snapshot!.players.any((p) => p.id == player.id)) {
-          _snapshot = _snapshot!.copyWith(
-            seq: event.seq,
-            players: [..._snapshot!.players, player],
-          );
-        }
-        break;
-
-      case PlayerLeft(:final playerId):
-        final remaining = _snapshot!.players.where((p) => p.id != playerId).toList();
-        _snapshot = _snapshot!.copyWith(
-          seq: event.seq,
-          players: remaining,
-        );
-        break;
-
-      case PlayerUpdated(:final playerId, :final gearPower, :final traitIds, :final name):
-        final updated = _snapshot!.players.map((p) {
-          if (p.id == playerId) {
-            return p.copyWith(
-              gearPower: gearPower ?? p.gearPower,
-              traitIds: traitIds ?? p.traitIds,
-              name: name ?? p.name,
-            );
-          }
-          return p;
-        }).toList();
-        _snapshot = _snapshot!.copyWith(
-          seq: event.seq,
-          players: updated,
-        );
-        break;
-
-      case SessionUpdated(:final name, :final settings):
-        _snapshot = _snapshot!.copyWith(
-          seq: event.seq,
-          name: name ?? _snapshot!.name,
-          settings: settings ?? _snapshot!.settings,
-        );
-        break;
-
-      case SessionEnded():
-        // Handled in message dispatcher
-        break;
+    if (event is LevelApplied) {
+      _pendingRequestIds.clear();
     }
   }
 
@@ -397,11 +453,12 @@ class ClientSessionEngine {
     _sendEnvelope(MessageType.gearUpdate, update.toJson());
 
     // Optimistically update local player gear
-    if (_playerId != null && _snapshot != null) {
-      final updated = _snapshot!.players.map((p) {
+    if (_playerId != null && _node != null) {
+      final updated = _node!.players.map((p) {
         return p.id == _playerId ? p.copyWith(gearPower: clamped) : p;
       }).toList();
-      _snapshot = _snapshot!.copyWith(players: updated);
+      _node!.resetSnapshot(_node!.snapshot.copyWith(players: updated));
+      _snapshot = _node!.snapshot;
       onStateUpdated?.call();
     }
   }
@@ -412,11 +469,12 @@ class ClientSessionEngine {
     final update = TraitsUpdate(traitIds: traitIds);
     _sendEnvelope(MessageType.traitsUpdate, update.toJson());
 
-    if (_playerId != null && _snapshot != null) {
-      final updated = _snapshot!.players.map((p) {
+    if (_playerId != null && _node != null) {
+      final updated = _node!.players.map((p) {
         return p.id == _playerId ? p.copyWith(traitIds: traitIds) : p;
       }).toList();
-      _snapshot = _snapshot!.copyWith(players: updated);
+      _node!.resetSnapshot(_node!.snapshot.copyWith(players: updated));
+      _snapshot = _node!.snapshot;
       onStateUpdated?.call();
     }
   }
@@ -436,10 +494,33 @@ class ClientSessionEngine {
     }
   }
 
+  /// Queries the host for the list of claimable disconnected or local seats.
+  void fetchClaimableSeats() {
+    _sendEnvelope(MessageType.seatsListRequest, {});
+  }
+
+  /// Claims an existing disconnected or local seat at the table.
+  void claimSeat({required String playerId, String? newName}) {
+    _playerId = playerId;
+    _sendClaim(playerId, newName ?? playerName);
+  }
+
+  void _sendClaim(String playerId, String? newName) {
+    final req = SeatClaimRequest(
+      playerId: playerId,
+      newName: newName,
+      listenIps: listenIps,
+      listenPort: listenPort,
+    );
+    _sendEnvelope(MessageType.seatClaimRequest, req.toJson());
+  }
+
   void _sendJoin() {
     final req = JoinRequest(
       name: playerName,
       appVersion: AppConstants.protocolVersion,
+      listenIps: listenIps,
+      listenPort: listenPort,
     );
     _sendEnvelope(MessageType.joinRequest, req.toJson());
   }
@@ -462,24 +543,189 @@ class ClientSessionEngine {
   void _sendEnvelope(String type, Map<String, dynamic> data) {
     final env = Envelope.create(
       type: type,
-      sessionId: _snapshot?.sessionId ?? '',
+      sessionId: snapshot?.sessionId ?? '',
       data: data,
     );
     _client.channel?.sink.add(env.encode());
   }
 
+  void _handleHostChanged(HostChanged event) {
+    if (event.epoch < (_node?.epoch ?? 0)) return;
+    _cancelFailoverTimer();
+    _applySyncEvent(event);
+    onHostChanged?.call(event);
+
+    if (event.newHostPlayerId != _playerId) {
+      // Connect to the new host
+      hostIps = List.from(event.ips);
+      port = event.port;
+      _reconnectPolicy.updateCandidates(event.ips, event.port);
+      _handleDisconnectAndReconnect();
+    }
+  }
+
+  Future<void> _handlePromotedToHost(int nextEpoch, [List<Seat>? seats]) async {
+    _cancelHandshakeTimer();
+    _cancelFailoverTimer();
+    _heartbeat.stop();
+    _streamSub?.cancel();
+    _client.disconnect();
+
+    if (_node == null || _playerId == null) return;
+
+    if (seats != null && seats.isNotEmpty) {
+      _node!.updateSeats(seats);
+    }
+
+    HostWebSocketServer? server;
+    if (onStartLocalServer != null) {
+      server = await onStartLocalServer!();
+    }
+
+    final hostRole = HostRole();
+    _node!.attachHostRole(hostRole);
+
+    final ips = listenIps.isNotEmpty ? listenIps : hostIps;
+    final sPort = server?.port ?? port;
+
+    final hostChanged = HostChanged(
+      seq: _node!.currentSeq + 1,
+      eventId: const Uuid().v4(),
+      ts: DateTime.now(),
+      epoch: nextEpoch,
+      newHostPlayerId: _playerId!,
+      ips: ips,
+      port: sPort,
+    );
+
+    hostRole.broadcastHostChanged(hostChanged);
+    hostRole.updateHostNetworkInfo(ips, sPort);
+    onHostChanged?.call(hostChanged);
+
+    _setStatus(SyncConnectionStatus.connected);
+    if (server != null) {
+      onPromotedToHost?.call(server, hostRole);
+    }
+    onStateUpdated?.call();
+  }
+
+  /// Called when a UDP broadcast discovery beacon is heard from a table host.
+  void handleDiscoveredBeacon(DiscoveryBeaconData beacon) {
+    final curSnapshot = snapshot;
+    if (curSnapshot != null && beacon.sid != curSnapshot.sessionId) return;
+    if (beacon.epoch < (curSnapshot?.epoch ?? 0)) return;
+
+    final ipsChanged = beacon.ips.isNotEmpty &&
+        (hostIps.length != beacon.ips.length ||
+            !hostIps.every((ip) => beacon.ips.contains(ip)));
+    final portChanged = beacon.port != port;
+
+    if (ipsChanged || portChanged || _status != SyncConnectionStatus.connected) {
+      hostIps = List.from(beacon.ips);
+      port = beacon.port;
+      _reconnectPolicy.updateCandidates(beacon.ips, beacon.port);
+      triggerImmediateReconnect();
+    }
+  }
+
   void _handleDisconnectAndReconnect() {
     if (_isDisposed) return;
+    _cancelHandshakeTimer();
     _heartbeat.stop();
     _streamSub?.cancel();
     _client.disconnect();
 
     _setStatus(SyncConnectionStatus.reconnecting);
 
-    // Schedule reconnect with backoff
+    _disconnectedSince ??= DateTime.now();
+    _scheduleFailoverElection();
+
     final delay = _reconnectPolicy.nextDelay();
     _reconnectTimer?.cancel();
     _reconnectTimer = Timer(delay, () => _tryConnect());
+  }
+
+  void _scheduleFailoverElection() {
+    if (_failoverTimer != null || _node == null || _playerId == null || _node!.roster.isEmpty) {
+      return;
+    }
+
+    final candidates = _node!.roster
+        .where((r) => r.playerId != _node!.hostPlayerId)
+        .toList()
+      ..sort((a, b) => a.rank.compareTo(b.rank));
+
+    final myIndex = candidates.indexWhere((r) => r.playerId == _playerId);
+    if (myIndex < 0) return;
+
+    final electionDelay = AppConstants.failoverGracePeriod +
+        (AppConstants.failoverRankInterval * myIndex);
+
+    _failoverTimer = Timer(electionDelay, () async {
+      await _runElectionPromotion(candidates, myIndex);
+    });
+
+    _startPeerProbing(candidates.sublist(0, myIndex));
+  }
+
+  void _startPeerProbing(List<RosterEntry> higherRanked) {
+    if (higherRanked.isEmpty) return;
+    _probeTimer?.cancel();
+    _probeTimer = Timer.periodic(const Duration(seconds: 2), (t) async {
+      if (_status == SyncConnectionStatus.connected || _isDisposed) {
+        t.cancel();
+        return;
+      }
+      for (final peer in higherRanked) {
+        if (peer.ips.isNotEmpty) {
+          try {
+            final (channel, _) = await _client.raceCandidates(
+              peer.ips,
+              peer.port,
+              timeout: const Duration(milliseconds: 800),
+            );
+            _cancelFailoverTimer();
+            _probeTimer?.cancel();
+            _probeTimer = null;
+            _listenToChannel(channel);
+            _sendRejoin();
+            return;
+          } catch (_) {}
+        }
+      }
+    });
+  }
+
+  Future<void> _runElectionPromotion(List<RosterEntry> candidates, int myIndex) async {
+    _cancelFailoverTimer();
+    if (_status == SyncConnectionStatus.connected || _isDisposed) return;
+
+    for (var i = 0; i < myIndex; i++) {
+      final peer = candidates[i];
+      if (peer.ips.isNotEmpty) {
+        try {
+          final (channel, _) = await _client.raceCandidates(
+            peer.ips,
+            peer.port,
+            timeout: const Duration(milliseconds: 1000),
+          );
+          _listenToChannel(channel);
+          _sendRejoin();
+          return;
+        } catch (_) {}
+      }
+    }
+
+    // No higher peer is running as host -> promote self
+    final nextEpoch = (_node?.epoch ?? 0) + 1;
+    await _handlePromotedToHost(nextEpoch);
+  }
+
+  void _cancelFailoverTimer() {
+    _failoverTimer?.cancel();
+    _failoverTimer = null;
+    _probeTimer?.cancel();
+    _probeTimer = null;
   }
 
   void _setStatus(SyncConnectionStatus newStatus) {
@@ -492,6 +738,8 @@ class ClientSessionEngine {
 
   void dispose() {
     _isDisposed = true;
+    _cancelHandshakeTimer();
+    _cancelFailoverTimer();
     _heartbeat.stop();
     _reconnectTimer?.cancel();
     _streamSub?.cancel();

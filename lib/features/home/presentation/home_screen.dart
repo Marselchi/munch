@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:munchkin_companion/core/constants/app_constants.dart';
 import 'package:munchkin_companion/core/theme/app_colors.dart';
 import 'package:munchkin_companion/features/host_session/application/host_session_controller.dart';
 import 'package:munchkin_companion/features/host_session/presentation/host_game_screen.dart';
@@ -12,6 +13,8 @@ import 'package:munchkin_companion/features/player_session/presentation/player_g
 import 'package:munchkin_companion/features/rules/presentation/rules_search_screen.dart';
 import 'package:munchkin_companion/persistence/session_snapshot_store.dart';
 import 'package:munchkin_companion/persistence/settings_store.dart';
+import 'package:munchkin_companion/sync/common/connection_status.dart';
+import 'package:munchkin_companion/sync/protocol/messages.dart';
 import 'package:munchkin_companion/sync/protocol/models.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -207,6 +210,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => NameEntryScreen(
+          hostIps: payload.hostIps,
+          port: payload.port,
+          onSeatClaimed: (seat) {
+            Navigator.of(context).pop();
+            _connectToSession(
+              playerName: seat.name,
+              hostIps: payload.hostIps,
+              port: payload.port,
+              claimPlayerId: seat.playerId,
+            );
+          },
           onNameSubmitted: (name) async {
             Navigator.of(context).pop();
             _connectToSession(
@@ -227,6 +241,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     required int port,
     String? token,
     String? playerId,
+    String? claimPlayerId,
   }) async {
     showDialog(
       context: context,
@@ -249,13 +264,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             port: port,
             token: token,
             playerId: playerId,
+            claimPlayerId: claimPlayerId,
           );
 
       if (mounted) {
-        Navigator.of(context).pop();
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const PlayerGameScreen()),
-        );
+        Navigator.of(context).pop(); // Dismiss loading
+
+        final clientState = ref.read(clientSessionProvider);
+        if (clientState?.connectionStatus == SyncConnectionStatus.connected) {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const PlayerGameScreen()),
+          );
+        } else if (clientState != null && clientState.claimableSeats.isNotEmpty) {
+          _showSeatTakeoverDialog(
+            playerName: playerName,
+            hostIps: hostIps,
+            port: port,
+            claimableSeats: clientState.claimableSeats,
+          );
+        } else if (clientState?.lastErrorMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(clientState!.lastErrorMessage!),
+              backgroundColor: AppColors.accentCrimson,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -268,6 +302,91 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         );
       }
     }
+  }
+
+  void _showSeatTakeoverDialog({
+    required String playerName,
+    required List<String> hostIps,
+    required int port,
+    required List<ClaimableSeat> claimableSeats,
+  }) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Персонаж не найден'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Токен устарел или персонаж был удален. Вы можете занять свободное место за столом или создать нового персонажа:',
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 14),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: claimableSeats.length,
+                  itemBuilder: (context, index) {
+                    final seat = claimableSeats[index];
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(
+                        seat.isLocal ? Icons.chair : Icons.person_off,
+                        color: AppColors.primaryGold,
+                      ),
+                      title: Text(seat.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: Text(
+                        'Ур. ${seat.level} • Сила ${seat.level + seat.gearPower} '
+                        '${seat.isLocal ? "(Создан ведущим)" : "(Свободно)"}',
+                      ),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+                      onTap: () {
+                        Navigator.of(ctx).pop();
+                        _connectToSession(
+                          playerName: playerName,
+                          hostIps: hostIps,
+                          port: port,
+                          claimPlayerId: seat.playerId,
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              SettingsStore.clearActiveReconnectSession();
+              setState(() => _resumablePlayerSession = null);
+            },
+            child: const Text('Отмена'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              SettingsStore.clearActiveReconnectSession();
+              setState(() => _resumablePlayerSession = null);
+              _proceedToNameEntry(QrPayload(
+                marker: AppConstants.appMarker,
+                version: AppConstants.protocolVersion,
+                sessionId: '',
+                sessionName: 'Манчкин',
+                hostIps: hostIps,
+                port: port,
+              ));
+            },
+            child: const Text('Новый игрок'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -359,12 +478,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           children: [
                             const Row(
                               children: [
-                                Icon(Icons.wifi, color: AppColors.textSecondary, size: 18),
+                                Icon(Icons.wifi, color: AppColors.primaryGold, size: 18),
                                 SizedBox(width: 8),
                                 Text(
-                                  'Предыдущая сессия игрока',
+                                  'Вернуться за стол?',
                                   style: TextStyle(
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.bold,
                                     color: AppColors.textPrimary,
                                   ),
                                 ),
@@ -372,8 +491,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'Персонаж: ${_resumablePlayerSession!.playerName}',
+                              'Стол: ${_resumablePlayerSession!.sessionName}',
                               style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                            ),
+                            Text(
+                              'Персонаж: ${_resumablePlayerSession!.playerName}',
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13,
+                              ),
                             ),
                             const SizedBox(height: 12),
                             Row(
@@ -384,7 +511,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     await SettingsStore.clearActiveReconnectSession();
                                     setState(() => _resumablePlayerSession = null);
                                   },
-                                  child: const Text('Сбросить', style: TextStyle(color: AppColors.textMuted)),
+                                  child: const Text('Забыть', style: TextStyle(color: AppColors.textMuted)),
                                 ),
                                 const SizedBox(width: 8),
                                 ElevatedButton(
@@ -397,7 +524,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       playerId: _resumablePlayerSession!.playerId,
                                     );
                                   },
-                                  child: const Text('Вернуться'),
+                                  child: const Text('Войти'),
                                 ),
                               ],
                             ),

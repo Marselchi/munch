@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-import '../../../../core/errors/app_exception.dart';
+import 'package:munchkin_companion/core/errors/app_exception.dart';
 import '../domain/rules_entities.dart';
 import 'bundle_validator.dart';
 import 'pack_registry.dart';

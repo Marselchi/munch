@@ -19,7 +19,7 @@ abstract final class AppTheme {
       cardTheme: const CardThemeData(
         color: AppColors.darkCard,
         elevation: 0,
-        margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        margin: EdgeInsets.symmetric(horizontal: 0, vertical: 6),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(12)),
           side: BorderSide(color: AppColors.darkCardBorder, width: 1),

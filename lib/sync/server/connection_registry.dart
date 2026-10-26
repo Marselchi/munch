@@ -84,6 +84,23 @@ class ConnectionRegistry {
     }
   }
 
+  /// Restores a previously saved seat on session resume.
+  void restoreSeat({
+    required String playerId,
+    required String token,
+  }) {
+    final existing = _clients[playerId];
+    if (existing == null) {
+      _clients[playerId] = ClientConnection(
+        playerId: playerId,
+        token: token,
+        channel: null,
+        isConnected: false,
+        disconnectedAt: DateTime.now(),
+      );
+    }
+  }
+
   ClientConnection? get(String playerId) => _clients[playerId];
 
   ClientConnection? findByToken(String token) {
@@ -137,12 +154,9 @@ class ConnectionRegistry {
           client.markDisconnected();
           onPlayerWatchdogDisconnected?.call(client.playerId);
         }
-      } else {
-        // Check seat grace expiration (5 minutes)
-        if (client.isSeatExpired(AppConstants.seatGracePeriod)) {
-          onPlayerTimedOut?.call(client.playerId);
-        }
       }
+      // Note: Seats are NOT auto-deleted after grace period.
+      // Disconnected seats become claimable and persist until explicit host removal.
     }
   }
 

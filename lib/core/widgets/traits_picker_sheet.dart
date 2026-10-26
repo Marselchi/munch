@@ -1,6 +1,8 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../../features/rules/domain/rules_entities.dart';
+import '../../features/rules/domain/rules_category.dart';
 
 class TraitsPickerSheet extends StatefulWidget {
   final String playerName;
@@ -26,6 +28,7 @@ class TraitsPickerSheet extends StatefulWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: AppColors.darkSurface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
@@ -46,7 +49,7 @@ class TraitsPickerSheet extends StatefulWidget {
 class _TraitsPickerSheetState extends State<TraitsPickerSheet> {
   late final Set<String> _selected;
   final TextEditingController _searchCtrl = TextEditingController();
-  String _selectedCategory = 'all'; // 'all', 'class', 'race', 'other'
+  String _selectedCategory = 'all';
 
   @override
   void initState() {
@@ -60,20 +63,52 @@ class _TraitsPickerSheetState extends State<TraitsPickerSheet> {
     super.dispose();
   }
 
+  List<String> _getAvailableCategories() {
+    final kinds = widget.allEntities
+        .map((e) => e.kind.toLowerCase().trim())
+        .where((k) => k.isNotEmpty)
+        .toSet()
+        .toList();
+
+    const priority = [
+      'class',
+      'race',
+      'mojo',
+      'power',
+      'style',
+      'training',
+      'accent',
+      'steed',
+      'ship',
+      'hireling',
+      'dungeon',
+      'enhancer',
+      'seal',
+      'disaster',
+      'madness',
+    ];
+
+    kinds.sort((a, b) {
+      final idxA = priority.indexOf(a);
+      final idxB = priority.indexOf(b);
+      if (idxA != -1 && idxB != -1) return idxA.compareTo(idxB);
+      if (idxA != -1) return -1;
+      if (idxB != -1) return 1;
+      return a.compareTo(b);
+    });
+
+    return ['all', ...kinds];
+  }
+
   List<RuleEntity> _getFilteredEntities() {
     final query = _searchCtrl.text.trim().toLowerCase();
 
     return widget.allEntities.where((e) {
+      final kind = e.kind.toLowerCase().trim();
+
       // Category filter
-      if (_selectedCategory == 'class' && e.kind.toLowerCase() != 'class') {
+      if (_selectedCategory != 'all' && kind != _selectedCategory) {
         return false;
-      }
-      if (_selectedCategory == 'race' && e.kind.toLowerCase() != 'race') {
-        return false;
-      }
-      if (_selectedCategory == 'other') {
-        final k = e.kind.toLowerCase();
-        if (k == 'class' || k == 'race') return false;
       }
 
       // Search query filter
@@ -87,46 +122,48 @@ class _TraitsPickerSheetState extends State<TraitsPickerSheet> {
     }).toList();
   }
 
-  String _getKindLabel(String kind) {
-    switch (kind.toLowerCase()) {
-      case 'class':
-        return 'Класс';
-      case 'race':
-        return 'Раса';
-      case 'accent':
-        return 'Акцент';
-      case 'mojo':
-        return 'Моджо';
-      case 'style':
-        return 'Стиль';
-      case 'power':
-        return 'Сила';
-      default:
-        return 'Свойство';
-    }
+  String _getKindTitle(String kind) {
+    if (kind == 'all') return 'Все';
+    final cat = RuleCategoryType.fromKind(kind);
+    return cat.title;
   }
 
   @override
   Widget build(BuildContext context) {
     final filtered = _getFilteredEntities();
+    final categories = _getAvailableCategories();
+    final viewInsets = MediaQuery.of(context).viewInsets;
+    final padding = MediaQuery.of(context).padding;
+    final bottomSafePadding = math.max(16.0, padding.bottom + 12.0);
 
     return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
+      padding: EdgeInsets.only(bottom: viewInsets.bottom),
       child: Container(
-        height: MediaQuery.of(context).size.height * 0.8,
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+        height: MediaQuery.of(context).size.height * 0.85,
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Header Handle
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.darkCardBorder,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+
             // Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
                   child: Text(
-                    'Классы и Расы: ${widget.playerName}',
+                    'Классы и свойства: ${widget.playerName}',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -136,19 +173,19 @@ class _TraitsPickerSheetState extends State<TraitsPickerSheet> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close, size: 20),
+                  icon: const Icon(Icons.close, size: 20, color: AppColors.textMuted),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
 
             // Search Bar
             TextField(
               controller: _searchCtrl,
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.search, size: 20),
+                prefixIcon: const Icon(Icons.search, size: 20, color: AppColors.primaryGold),
                 suffixIcon: _searchCtrl.text.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.clear, size: 18),
@@ -158,25 +195,22 @@ class _TraitsPickerSheetState extends State<TraitsPickerSheet> {
                         },
                       )
                     : null,
-                hintText: 'Поиск (воин, эльф, вампир, мутант...)',
+                hintText: 'Поиск (воин, эльф, вампир, мутант, моджо...)',
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
 
-            // Category Filter Chips
+            // Concrete Category Filter Chips
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: [
-                  _buildCategoryChip('all', 'Все'),
-                  const SizedBox(width: 8),
-                  _buildCategoryChip('class', 'Классы'),
-                  const SizedBox(width: 8),
-                  _buildCategoryChip('race', 'Расы'),
-                  const SizedBox(width: 8),
-                  _buildCategoryChip('other', 'Акценты / Моджо / Силы'),
-                ],
+                children: categories.map((cat) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: _buildCategoryChip(cat, _getKindTitle(cat)),
+                  );
+                }).toList(),
               ),
             ),
             const SizedBox(height: 8),
@@ -201,10 +235,10 @@ class _TraitsPickerSheetState extends State<TraitsPickerSheet> {
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
             ],
 
-            const Divider(color: AppColors.darkCardBorder),
+            const Divider(color: AppColors.darkCardBorder, height: 1),
 
             // List of items
             Expanded(
@@ -224,16 +258,17 @@ class _TraitsPickerSheetState extends State<TraitsPickerSheet> {
                         final isSelected = _selected.contains(entity.title);
 
                         return CheckboxListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           title: Text(
                             entity.title,
                             style: TextStyle(
+                              fontSize: 14,
                               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                               color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
                             ),
                           ),
                           subtitle: Text(
-                            '${_getKindLabel(entity.kind)} • Набор: ${entity.setId}',
+                            '${_getKindTitle(entity.kind)} • Набор: ${entity.setId}',
                             style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
                           ),
                           value: isSelected,
@@ -253,33 +288,49 @@ class _TraitsPickerSheetState extends State<TraitsPickerSheet> {
                     ),
             ),
 
-            // Save / Reset Actions
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                if (_selected.isNotEmpty)
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _selected.clear();
-                      });
-                    },
-                    child: const Text('Сбросить всё', style: TextStyle(color: AppColors.accentCrimson)),
+            // Safe Bottom Action Bar: Save & Cancel never overlap phone interface
+            Container(
+              padding: EdgeInsets.only(top: 10, bottom: bottomSafePadding),
+              decoration: const BoxDecoration(
+                border: Border(top: BorderSide(color: AppColors.darkCardBorder, width: 1)),
+              ),
+              child: Row(
+                children: [
+                  if (_selected.isNotEmpty)
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _selected.clear();
+                        });
+                      },
+                      child: const Text(
+                        'Сбросить всё',
+                        style: TextStyle(color: AppColors.accentCrimson, fontSize: 13),
+                      ),
+                    ),
+                  const Spacer(),
+                  OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(96, 44),
+                    ),
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Отмена'),
                   ),
-                const Spacer(),
-                OutlinedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Отмена'),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () {
-                    widget.onSave(_selected.toList());
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Сохранить'),
-                ),
-              ],
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryGold,
+                      foregroundColor: Colors.black,
+                      minimumSize: const Size(110, 44),
+                    ),
+                    onPressed: () {
+                      widget.onSave(_selected.toList());
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Сохранить', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -300,14 +351,15 @@ class _TraitsPickerSheetState extends State<TraitsPickerSheet> {
       selectedColor: const Color(0xFF383C48),
       backgroundColor: const Color(0xFF22252C),
       labelStyle: TextStyle(
-        fontSize: 12,
+        fontSize: 11,
         color: isCurrent ? AppColors.textPrimary : AppColors.textSecondary,
         fontWeight: isCurrent ? FontWeight.w600 : FontWeight.normal,
       ),
       side: BorderSide(
-        color: isCurrent ? const Color(0xFF6B7280) : AppColors.darkCardBorder,
+        color: isCurrent ? AppColors.primaryGold : AppColors.darkCardBorder,
       ),
       padding: const EdgeInsets.symmetric(horizontal: 4),
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
   }
 }

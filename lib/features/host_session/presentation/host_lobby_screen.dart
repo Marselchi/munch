@@ -4,9 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
-import '../../../../core/constants/app_constants.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../sync/protocol/models.dart';
+import 'package:munchkin_companion/core/constants/app_constants.dart';
+import 'package:munchkin_companion/core/theme/app_colors.dart';
+import 'package:munchkin_companion/sync/protocol/models.dart';
 import '../application/host_session_controller.dart';
 import 'host_game_screen.dart';
 
@@ -69,6 +69,31 @@ class _HostLobbyScreenState extends ConsumerState<HostLobbyScreen> {
                   );
             },
             child: const Text('Добавить'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmTransferHost(String playerId, String playerName) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Передать стол?'),
+        content: Text(
+          'Вы действительно хотите сделать игрока "$playerName" новым ведущим стола? Ваши локальные персонажи перейдут под его управление.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Отмена'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              ref.read(hostSessionProvider.notifier).transferHost(playerId);
+            },
+            child: const Text('Передать'),
           ),
         ],
       ),
@@ -142,6 +167,41 @@ class _HostLobbyScreenState extends ConsumerState<HostLobbyScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Column(
               children: [
+                // Hotspot + VPN Warning Banner
+                Consumer(
+                  builder: (context, ref, _) {
+                    final warningAsync = ref.watch(hostHotspotVpnWarningProvider);
+                    if (warningAsync.value == true) {
+                      return Card(
+                        color: AppColors.darkCard,
+                        margin: const EdgeInsets.only(bottom: 12),
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(color: AppColors.accentCrimson),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(Icons.warning_amber_rounded, color: AppColors.accentCrimson, size: 22),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  'Внимание: Обнаружен активный VPN при раздаче точки доступа Wi-Fi. '
+                                  'Игроки могут не видеть этот стол. Включите «LAN bypass / Разрешить локальную сеть» в настройках VPN или отключите VPN.',
+                                  style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+
                 // QR Card
                 Card(
                   child: Padding(
@@ -294,6 +354,9 @@ class _HostLobbyScreenState extends ConsumerState<HostLobbyScreen> {
 
                     final isHost = player.id == engine.hostPlayerId;
 
+                    final rosterEntry = engine.node.roster.where((r) => r.playerId == playerId).firstOrNull;
+                    final isDeputy = rosterEntry != null && rosterEntry.rank == 1 && !isHost;
+
                     return Card(
                       child: ListTile(
                         leading: CircleAvatar(
@@ -308,7 +371,29 @@ class _HostLobbyScreenState extends ConsumerState<HostLobbyScreen> {
                             ),
                           ),
                         ),
-                        title: Text(player.name),
+                        title: Row(
+                          children: [
+                            Text(player.name),
+                            if (isDeputy) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppColors.statusReconnecting.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Text(
+                                  'Заместитель',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: AppColors.statusReconnecting,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
                         subtitle: Text(
                           isHost ? 'Ведущий стола' : 'В игре',
                           style: TextStyle(
@@ -316,6 +401,55 @@ class _HostLobbyScreenState extends ConsumerState<HostLobbyScreen> {
                             color: isHost ? AppColors.textSecondary : AppColors.accentGreen,
                           ),
                         ),
+                        trailing: isHost
+                            ? null
+                            : PopupMenuButton<String>(
+                                icon: const Icon(Icons.more_vert, size: 20),
+                                onSelected: (val) {
+                                  if (val == 'transfer') {
+                                    _confirmTransferHost(player.id, player.name);
+                                  } else if (val == 'deputy') {
+                                    ref.read(hostSessionProvider.notifier).nominateDeputy(player.id);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('${player.name} назначен заместителем ведущего')),
+                                    );
+                                  } else if (val == 'kick') {
+                                    ref.read(hostSessionProvider.notifier).kickPlayer(player.id);
+                                  }
+                                },
+                                itemBuilder: (ctx) => [
+                                  const PopupMenuItem(
+                                    value: 'deputy',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.star_outline, size: 18),
+                                        SizedBox(width: 8),
+                                        Text('Назначить заместителем'),
+                                      ],
+                                    ),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'transfer',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.swap_horiz, size: 18),
+                                        SizedBox(width: 8),
+                                        Text('Сделать ведущим'),
+                                      ],
+                                    ),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'kick',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.person_remove, size: 18, color: AppColors.accentCrimson),
+                                        SizedBox(width: 8),
+                                        Text('Исключить', style: TextStyle(color: AppColors.accentCrimson)),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                       ),
                     );
                   },

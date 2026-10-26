@@ -112,6 +112,94 @@ class LevelReason {
   int get hashCode => Object.hash(kind, customText);
 }
 
+class Seat {
+  final String playerId;
+  final String token;
+
+  const Seat({
+    required this.playerId,
+    required this.token,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'playerId': playerId,
+        'token': token,
+      };
+
+  factory Seat.fromJson(Map<String, dynamic> json) => Seat(
+        playerId: json['playerId'] as String,
+        token: json['token'] as String,
+      );
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Seat &&
+          runtimeType == other.runtimeType &&
+          playerId == other.playerId &&
+          token == other.token;
+
+  @override
+  int get hashCode => Object.hash(playerId, token);
+}
+
+class RosterEntry {
+  final String playerId;
+  final List<String> ips;
+  final int port;
+  final int rank;
+
+  const RosterEntry({
+    required this.playerId,
+    required this.ips,
+    required this.port,
+    required this.rank,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'playerId': playerId,
+        'ips': ips,
+        'port': port,
+        'rank': rank,
+      };
+
+  factory RosterEntry.fromJson(Map<String, dynamic> json) => RosterEntry(
+        playerId: json['playerId'] as String,
+        ips: (json['ips'] as List<dynamic>?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            const [],
+        port: json['port'] as int? ?? 8787,
+        rank: json['rank'] as int? ?? 0,
+      );
+
+  RosterEntry copyWith({
+    String? playerId,
+    List<String>? ips,
+    int? port,
+    int? rank,
+  }) {
+    return RosterEntry(
+      playerId: playerId ?? this.playerId,
+      ips: ips ?? this.ips,
+      port: port ?? this.port,
+      rank: rank ?? this.rank,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RosterEntry &&
+          runtimeType == other.runtimeType &&
+          playerId == other.playerId &&
+          rank == other.rank &&
+          port == other.port;
+
+  @override
+  int get hashCode => Object.hash(playerId, rank, port);
+}
+
 class Player {
   final String id;
   final String name;
@@ -119,6 +207,7 @@ class Player {
   final int gearPower;
   final List<String> traitIds;
   final List<String> customTraits;
+  final String? ownerId;
 
   const Player({
     required this.id,
@@ -127,6 +216,7 @@ class Player {
     this.gearPower = 0,
     this.traitIds = const [],
     this.customTraits = const [],
+    this.ownerId,
   });
 
   int get totalPower => level + gearPower;
@@ -138,6 +228,8 @@ class Player {
     int? gearPower,
     List<String>? traitIds,
     List<String>? customTraits,
+    String? ownerId,
+    bool clearOwnerId = false,
   }) {
     return Player(
       id: id ?? this.id,
@@ -146,6 +238,7 @@ class Player {
       gearPower: gearPower ?? this.gearPower,
       traitIds: traitIds ?? this.traitIds,
       customTraits: customTraits ?? this.customTraits,
+      ownerId: clearOwnerId ? null : (ownerId ?? this.ownerId),
     );
   }
 
@@ -156,6 +249,7 @@ class Player {
         'gearPower': gearPower,
         'traitIds': traitIds,
         'customTraits': customTraits,
+        if (ownerId != null) 'ownerId': ownerId,
       };
 
   factory Player.fromJson(Map<String, dynamic> json) {
@@ -172,6 +266,7 @@ class Player {
               ?.map((e) => e.toString())
               .toList() ??
           const [],
+      ownerId: json['ownerId'] as String?,
     );
   }
 
@@ -183,10 +278,11 @@ class Player {
           id == other.id &&
           name == other.name &&
           level == other.level &&
-          gearPower == other.gearPower;
+          gearPower == other.gearPower &&
+          ownerId == other.ownerId;
 
   @override
-  int get hashCode => Object.hash(id, name, level, gearPower);
+  int get hashCode => Object.hash(id, name, level, gearPower, ownerId);
 }
 
 class SessionSettings {
@@ -292,6 +388,24 @@ sealed class SyncEvent {
           eventId: eventId,
           ts: ts,
           reason: json['reason'] as String? ?? 'ended',
+        ),
+      'HostChanged' => HostChanged(
+          seq: seq,
+          eventId: eventId,
+          ts: ts,
+          epoch: json['epoch'] as int? ?? 0,
+          newHostPlayerId: json['newHostPlayerId'] as String,
+          ips: (json['ips'] as List<dynamic>?)
+                  ?.map((e) => e.toString())
+                  .toList() ??
+              const [],
+          port: json['port'] as int? ?? 8787,
+        ),
+      'SeatClaimed' => SeatClaimed(
+          seq: seq,
+          eventId: eventId,
+          ts: ts,
+          playerId: json['playerId'] as String,
         ),
       _ => throw FormatException('Unknown SyncEvent type: $type'),
     };
@@ -474,6 +588,55 @@ final class SessionEnded extends SyncEvent {
       };
 }
 
+final class HostChanged extends SyncEvent {
+  final int epoch;
+  final String newHostPlayerId;
+  final List<String> ips;
+  final int port;
+
+  const HostChanged({
+    required super.seq,
+    required super.eventId,
+    required super.ts,
+    required this.epoch,
+    required this.newHostPlayerId,
+    required this.ips,
+    required this.port,
+  });
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'HostChanged',
+        'seq': seq,
+        'eventId': eventId,
+        'ts': ts.millisecondsSinceEpoch,
+        'epoch': epoch,
+        'newHostPlayerId': newHostPlayerId,
+        'ips': ips,
+        'port': port,
+      };
+}
+
+final class SeatClaimed extends SyncEvent {
+  final String playerId;
+
+  const SeatClaimed({
+    required super.seq,
+    required super.eventId,
+    required super.ts,
+    required this.playerId,
+  });
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'SeatClaimed',
+        'seq': seq,
+        'eventId': eventId,
+        'ts': ts.millisecondsSinceEpoch,
+        'playerId': playerId,
+      };
+}
+
 class SessionSnapshot {
   final String sessionId;
   final String name;
@@ -485,6 +648,10 @@ class SessionSnapshot {
   final List<SyncEvent> events;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final int epoch;
+  final List<Seat> seats;
+  final int? lastPort;
+  final List<RosterEntry> roster;
 
   const SessionSnapshot({
     required this.sessionId,
@@ -497,6 +664,10 @@ class SessionSnapshot {
     required this.events,
     required this.createdAt,
     required this.updatedAt,
+    this.epoch = 0,
+    this.seats = const [],
+    this.lastPort,
+    this.roster = const [],
   });
 
   SessionSnapshot copyWith({
@@ -510,6 +681,10 @@ class SessionSnapshot {
     List<SyncEvent>? events,
     DateTime? createdAt,
     DateTime? updatedAt,
+    int? epoch,
+    List<Seat>? seats,
+    int? lastPort,
+    List<RosterEntry>? roster,
   }) {
     return SessionSnapshot(
       sessionId: sessionId ?? this.sessionId,
@@ -522,6 +697,10 @@ class SessionSnapshot {
       events: events ?? this.events,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      epoch: epoch ?? this.epoch,
+      seats: seats ?? this.seats,
+      lastPort: lastPort ?? this.lastPort,
+      roster: roster ?? this.roster,
     );
   }
 
@@ -536,6 +715,10 @@ class SessionSnapshot {
         'events': events.map((e) => e.toJson()).toList(),
         'createdAt': createdAt.millisecondsSinceEpoch,
         'updatedAt': updatedAt.millisecondsSinceEpoch,
+        'epoch': epoch,
+        'seats': seats.map((s) => s.toJson()).toList(),
+        if (lastPort != null) 'lastPort': lastPort,
+        'roster': roster.map((r) => r.toJson()).toList(),
       };
 
   factory SessionSnapshot.fromJson(Map<String, dynamic> json) {
@@ -554,6 +737,16 @@ class SessionSnapshot {
           .toList(),
       createdAt: DateTime.fromMillisecondsSinceEpoch(json['createdAt'] as int),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(json['updatedAt'] as int),
+      epoch: json['epoch'] as int? ?? 0,
+      seats: (json['seats'] as List<dynamic>?)
+              ?.map((s) => Seat.fromJson(s as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      lastPort: json['lastPort'] as int?,
+      roster: (json['roster'] as List<dynamic>?)
+              ?.map((r) => RosterEntry.fromJson(r as Map<String, dynamic>))
+              .toList() ??
+          const [],
     );
   }
 }

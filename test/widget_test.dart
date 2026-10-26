@@ -7,8 +7,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('МАНЧКИН'), findsOneWidget);
-    expect(find.text('Создать стол (Ведущий)'), findsOneWidget);
-    expect(find.text('Присоединиться к игре'), findsOneWidget);
+    expect(find.text('Создать стол'), findsOneWidget);
+    expect(find.text('Подключиться к столу'), findsOneWidget);
     expect(find.text('Справочник правил'), findsOneWidget);
   });
 }

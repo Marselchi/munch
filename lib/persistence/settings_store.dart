@@ -8,6 +8,7 @@ class ReconnectSessionData {
   final List<String> hostIps;
   final int port;
   final String playerName;
+  final String sessionName;
 
   const ReconnectSessionData({
     required this.sessionId,
@@ -16,6 +17,7 @@ class ReconnectSessionData {
     required this.hostIps,
     required this.port,
     required this.playerName,
+    this.sessionName = 'Манчкин',
   });
 
   Map<String, dynamic> toJson() => {
@@ -25,6 +27,7 @@ class ReconnectSessionData {
         'hostIps': hostIps,
         'port': port,
         'playerName': playerName,
+        'sessionName': sessionName,
       };
 
   factory ReconnectSessionData.fromJson(Map<String, dynamic> json) =>
@@ -38,6 +41,7 @@ class ReconnectSessionData {
             const [],
         port: json['port'] as int? ?? 8787,
         playerName: json['playerName'] as String? ?? 'Игрок',
+        sessionName: json['sessionName'] as String? ?? 'Манчкин',
       );
 }
 

@@ -2,20 +2,27 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../persistence/settings_store.dart';
 import '../../../sync/client/client_session_engine.dart';
 import '../../../sync/common/connection_status.dart';
+import '../../../sync/common/discovery_beacon.dart';
 import '../../../sync/common/event_log.dart';
+import '../../../sync/common/network_binder.dart';
+import '../../../sync/protocol/messages.dart';
 import '../../../sync/protocol/models.dart';
+import '../../../sync/server/ws_server.dart';
+import '../../host_session/application/host_session_controller.dart';
 
 class ClientSessionState {
   final ClientSessionEngine engine;
   final SyncConnectionStatus connectionStatus;
   final int updateTick;
   final String? lastErrorMessage;
+  final List<ClaimableSeat> claimableSeats;
 
   const ClientSessionState({
     required this.engine,
     required this.connectionStatus,
     this.updateTick = 0,
     this.lastErrorMessage,
+    this.claimableSeats = const [],
   });
 
   ClientSessionState copyWith({
@@ -23,21 +30,27 @@ class ClientSessionState {
     SyncConnectionStatus? connectionStatus,
     int? updateTick,
     String? lastErrorMessage,
+    List<ClaimableSeat>? claimableSeats,
   }) {
     return ClientSessionState(
       engine: engine ?? this.engine,
       connectionStatus: connectionStatus ?? this.connectionStatus,
       updateTick: updateTick ?? this.updateTick,
       lastErrorMessage: lastErrorMessage ?? this.lastErrorMessage,
+      claimableSeats: claimableSeats ?? this.claimableSeats,
     );
   }
 }
 
 class ClientSessionNotifier extends Notifier<ClientSessionState?> {
+  ClientBeaconListener? _beaconListener;
+
   @override
   ClientSessionState? build() {
     ref.onDispose(() {
+      _beaconListener?.stop();
       state?.engine.dispose();
+      NetworkBinder.unbindFromNetwork();
     });
     return null;
   }
@@ -48,8 +61,15 @@ class ClientSessionNotifier extends Notifier<ClientSessionState?> {
     required int port,
     String? token,
     String? playerId,
+    String? claimPlayerId,
   }) async {
+    // Bind Android process to physical Wi-Fi (excluding VPN)
+    await NetworkBinder.bindToPhysicalWifi();
+
     state?.engine.dispose();
+    _beaconListener?.stop();
+
+    final myIps = await HostWebSocketServer.getHostIpAddresses();
 
     final engine = ClientSessionEngine(
       playerName: playerName,
@@ -57,7 +77,32 @@ class ClientSessionNotifier extends Notifier<ClientSessionState?> {
       port: port,
       initialToken: token,
       initialPlayerId: playerId,
+      claimPlayerId: claimPlayerId,
+      listenIps: myIps,
     );
+
+    engine.onStartLocalServer = () async {
+      final server = HostWebSocketServer(onClientConnected: (channel) {
+        engine.node?.hostRole?.handleIncomingConnection(channel);
+      });
+      await server.start();
+      return server;
+    };
+
+    engine.onPromotedToHost = (server, hostRole) {
+      ref.read(hostSessionProvider.notifier).adoptPromotedHost(
+        clientEngine: engine,
+        server: server,
+        hostRole: hostRole,
+      );
+    };
+
+    final beaconListener = ClientBeaconListener();
+    beaconListener.onBeaconReceived = (beacon) {
+      engine.handleDiscoveredBeacon(beacon);
+    };
+    await beaconListener.start();
+    _beaconListener = beaconListener;
 
     state = ClientSessionState(
       engine: engine,
@@ -85,6 +130,7 @@ class ClientSessionNotifier extends Notifier<ClientSessionState?> {
             hostIps: hostIps,
             port: port,
             playerName: playerName,
+            sessionName: engine.snapshot!.name,
           ));
         }
 
@@ -101,6 +147,24 @@ class ClientSessionNotifier extends Notifier<ClientSessionState?> {
       }
     };
 
+    engine.onSeatTakeoverOffered = (seats) {
+      if (state != null) {
+        state = state!.copyWith(
+          claimableSeats: seats,
+          updateTick: state!.updateTick + 1,
+        );
+      }
+    };
+
+    engine.onClaimableSeatsReceived = (seats) {
+      if (state != null) {
+        state = state!.copyWith(
+          claimableSeats: seats,
+          updateTick: state!.updateTick + 1,
+        );
+      }
+    };
+
     engine.onSessionEnded = (reason) {
       SettingsStore.clearActiveReconnectSession();
       if (state != null) {
@@ -112,6 +176,14 @@ class ClientSessionNotifier extends Notifier<ClientSessionState?> {
     };
 
     await engine.start();
+  }
+
+  void claimSeat(String playerId, [String? newName]) {
+    state?.engine.claimSeat(playerId: playerId, newName: newName);
+  }
+
+  void fetchClaimableSeats() {
+    state?.engine.fetchClaimableSeats();
   }
 
   String requestLevelChange({
@@ -141,7 +213,10 @@ class ClientSessionNotifier extends Notifier<ClientSessionState?> {
 
   void leaveSession() {
     SettingsStore.clearActiveReconnectSession();
+    _beaconListener?.stop();
+    _beaconListener = null;
     state?.engine.leave();
+    NetworkBinder.unbindFromNetwork();
     state = null;
   }
 }
@@ -205,4 +280,8 @@ final clientHistoryEntriesProvider = Provider<List<HistoryEntry>>((ref) {
 
 final clientLastErrorMessageProvider = Provider<String?>((ref) {
   return ref.watch(clientSessionProvider.select((s) => s?.lastErrorMessage));
+});
+
+final clientClaimableSeatsProvider = Provider<List<ClaimableSeat>>((ref) {
+  return ref.watch(clientSessionProvider.select((s) => s?.claimableSeats ?? const []));
 });

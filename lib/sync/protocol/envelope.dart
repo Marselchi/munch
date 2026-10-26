@@ -9,6 +9,7 @@ class Envelope {
   final String id;
   final int ts;
   final String sid;
+  final int epoch;
   final Map<String, dynamic> data;
 
   const Envelope({
@@ -17,12 +18,14 @@ class Envelope {
     required this.id,
     required this.ts,
     required this.sid,
+    this.epoch = 0,
     this.data = const {},
   });
 
   factory Envelope.create({
     required String type,
     required String sessionId,
+    int epoch = 0,
     Map<String, dynamic> data = const {},
   }) {
     return Envelope(
@@ -31,6 +34,7 @@ class Envelope {
       id: const Uuid().v4(),
       ts: DateTime.now().millisecondsSinceEpoch,
       sid: sessionId,
+      epoch: epoch,
       data: data,
     );
   }
@@ -41,6 +45,7 @@ class Envelope {
         'id': id,
         'ts': ts,
         'sid': sid,
+        'epoch': epoch,
         'data': data,
       };
 
@@ -53,6 +58,7 @@ class Envelope {
       id: json['id'] as String,
       ts: json['ts'] as int,
       sid: json['sid'] as String? ?? '',
+      epoch: json['epoch'] as int? ?? 0,
       data: (json['data'] as Map<String, dynamic>?) ?? const {},
     );
   }

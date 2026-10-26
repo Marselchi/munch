@@ -2,8 +2,8 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/empty_state.dart';
+import 'package:munchkin_companion/core/theme/app_colors.dart';
+import 'package:munchkin_companion/core/widgets/empty_state.dart';
 import '../application/rules_controller.dart';
 import '../data/pack_registry.dart';
 

@@ -95,7 +95,7 @@ void main() {
       expect(undoneRestored.restoredLevel, 3);
     });
 
-    test('SessionSnapshot full serialize and deserialize', () {
+    test('SessionSnapshot full serialize and deserialize with Phase 1 fields', () {
       final now = DateTime.now();
       final snapshot = SessionSnapshot(
         sessionId: 's-100',
@@ -105,7 +105,7 @@ void main() {
         settings: const SessionSettings(maxLevel: 22),
         seq: 3,
         players: const [
-          Player(id: 'host-1', name: 'Ведущий', level: 5, gearPower: 12),
+          Player(id: 'host-1', name: 'Ведущий', level: 5, gearPower: 12, ownerId: 'host-1'),
           Player(id: 'p-2', name: 'Эльф-Вор', level: 4, gearPower: 7),
         ],
         events: [
@@ -115,9 +115,34 @@ void main() {
             ts: now,
             player: const Player(id: 'host-1', name: 'Ведущий'),
           ),
+          HostChanged(
+            seq: 2,
+            eventId: 'e-2',
+            ts: now,
+            epoch: 1,
+            newHostPlayerId: 'host-1',
+            ips: const ['192.168.1.50'],
+            port: 8787,
+          ),
+          SeatClaimed(
+            seq: 3,
+            eventId: 'e-3',
+            ts: now,
+            playerId: 'p-2',
+          ),
         ],
         createdAt: now,
         updatedAt: now,
+        epoch: 1,
+        seats: const [
+          Seat(playerId: 'host-1', token: 'tok-host'),
+          Seat(playerId: 'p-2', token: 'tok-p2'),
+        ],
+        lastPort: 8787,
+        roster: const [
+          RosterEntry(playerId: 'host-1', ips: ['192.168.1.50'], port: 8787, rank: 0),
+          RosterEntry(playerId: 'p-2', ips: ['192.168.1.55'], port: 8787, rank: 1),
+        ],
       );
 
       final jsonStr = jsonEncode(snapshot.toJson());
@@ -128,8 +153,15 @@ void main() {
       expect(decoded.name, 'Ночной турнир');
       expect(decoded.settings.maxLevel, 22);
       expect(decoded.players.length, 2);
+      expect(decoded.players[0].ownerId, 'host-1');
       expect(decoded.players[0].totalPower, 17);
-      expect(decoded.events.length, 1);
+      expect(decoded.events.length, 3);
+      expect(decoded.epoch, 1);
+      expect(decoded.seats.length, 2);
+      expect(decoded.seats[0].token, 'tok-host');
+      expect(decoded.lastPort, 8787);
+      expect(decoded.roster.length, 2);
+      expect(decoded.roster[1].rank, 1);
     });
   });
 }

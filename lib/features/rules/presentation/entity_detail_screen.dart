@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
+import 'package:munchkin_companion/core/theme/app_colors.dart';
+import '../domain/rules_category.dart';
 import '../domain/rules_entities.dart';
+import 'widgets/interactive_rule_text.dart';
 
 class EntityDetailScreen extends StatelessWidget {
   final RuleEntity entity;
@@ -11,11 +13,7 @@ class EntityDetailScreen extends StatelessWidget {
   });
 
   String _formatKind(String kind) {
-    return switch (kind.toLowerCase()) {
-      'class' => 'Класс',
-      'race' => 'Раса',
-      _ => kind.toUpperCase(),
-    };
+    return RuleCategoryType.fromKind(kind).title;
   }
 
   @override
@@ -23,18 +21,56 @@ class EntityDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(entity.title),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.table_restaurant, color: AppColors.secondaryAmber),
+            tooltip: 'Вернуться к столу',
+            onPressed: () {
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            },
+          ),
+        ],
+      ),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: const BoxDecoration(
+            color: AppColors.darkSurface,
+            border: Border(top: BorderSide(color: AppColors.darkCardBorder)),
+          ),
+          child: Row(
+            children: [
+              OutlinedButton.icon(
+                icon: const Icon(Icons.arrow_back, size: 16),
+                label: const Text('Назад'),
+                onPressed: () => Navigator.of(context).maybePop(),
+              ),
+              const Spacer(),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.secondaryAmber,
+                  foregroundColor: Colors.black,
+                ),
+                icon: const Icon(Icons.table_restaurant, size: 16),
+                label: const Text('К столу', style: TextStyle(fontWeight: FontWeight.bold)),
+                onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
+              ),
+            ],
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Header card
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Row(
                       children: [
@@ -73,7 +109,7 @@ class EntityDetailScreen extends StatelessWidget {
                     Text(
                       entity.title,
                       style: const TextStyle(
-                        fontSize: 24,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
                       ),
@@ -93,6 +129,7 @@ class EntityDetailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+
             // Rule sections
             const Text(
               'Способности и правила',
@@ -108,7 +145,7 @@ class EntityDetailScreen extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(14),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       if (section.heading != null &&
                           section.heading!.trim().isNotEmpty) ...[
@@ -120,14 +157,15 @@ class EntityDetailScreen extends StatelessWidget {
                             color: AppColors.secondaryAmber,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 6),
                       ],
-                      Text(
-                        section.text,
+                      InteractiveRuleText(
+                        text: section.text,
+                        fillWidth: true,
                         style: const TextStyle(
                           fontSize: 14,
                           color: AppColors.textPrimary,
-                          height: 1.4,
+                          height: 1.45,
                         ),
                       ),
                     ],
@@ -135,6 +173,7 @@ class EntityDetailScreen extends StatelessWidget {
                 ),
               );
             }),
+
             // Epic section (Accent Card)
             if (entity.epic != null && entity.epic!.ruleSections.isNotEmpty) ...[
               const SizedBox(height: 20),
@@ -169,32 +208,36 @@ class EntityDetailScreen extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       ...entity.epic!.ruleSections.map((epicSec) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (epicSec.heading != null) ...[
-                              Text(
-                                epicSec.heading!,
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              if (epicSec.heading != null) ...[
+                                Text(
+                                  epicSec.heading!,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.epicPurple,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                              ],
+                              InteractiveRuleText(
+                                text: epicSec.text,
+                                fillWidth: true,
                                 style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.epicPurple,
+                                  fontSize: 14,
+                                  color: AppColors.textPrimary,
+                                  height: 1.45,
                                 ),
                               ),
-                              const SizedBox(height: 4),
                             ],
-                            Text(
-                              epicSec.text,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: AppColors.textPrimary,
-                                height: 1.4,
-                              ),
-                            ),
-                          ],
+                          ),
                         );
                       }),
                     ],

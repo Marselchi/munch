@@ -1,4 +1,4 @@
-import '../../../../core/errors/app_exception.dart';
+import 'package:munchkin_companion/core/errors/app_exception.dart';
 import '../domain/rules_entities.dart';
 
 abstract final class BundleValidator {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../sync/protocol/models.dart';
 import 'gear_stepper.dart';
+import 'trait_tooltip_chip.dart';
 
 class PlayerPowerCard extends StatelessWidget {
   final Player player;
@@ -187,11 +188,7 @@ class PlayerPowerCard extends StatelessWidget {
                 runSpacing: 4,
                 children: [
                   ...player.traitIds.map(
-                    (trait) => Chip(
-                      label: Text(trait, style: const TextStyle(fontSize: 12)),
-                      backgroundColor: AppColors.darkSurface,
-                      side: const BorderSide(color: AppColors.darkCardBorder),
-                    ),
+                    (trait) => TraitTooltipChip(traitName: trait),
                   ),
                   if (onEditTraits != null)
                     ActionChip(

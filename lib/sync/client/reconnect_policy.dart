@@ -3,8 +3,8 @@ import 'dart:math' as math;
 /// Manages exponential backoff and IP rotation for client reconnection.
 /// Pure Dart (no Flutter imports).
 class ReconnectPolicy {
-  final List<String> hostIps;
-  final int port;
+  List<String> hostIps;
+  int port;
 
   int _attemptCount = 0;
   int _currentIpIndex = 0;
@@ -16,6 +16,14 @@ class ReconnectPolicy {
   });
 
   int get attemptCount => _attemptCount;
+
+  /// Updates candidate IPs and port upon host migration or beacon discovery.
+  void updateCandidates(List<String> newIps, int newPort) {
+    hostIps = List.from(newIps);
+    port = newPort;
+    _currentIpIndex = 0;
+    reset();
+  }
 
   /// Returns the next candidate IP to try and advances the rotation.
   String nextIp() {

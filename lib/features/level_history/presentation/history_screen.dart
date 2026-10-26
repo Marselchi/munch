@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../../core/widgets/empty_state.dart';
-import '../../../../sync/common/event_log.dart';
+import 'package:munchkin_companion/core/widgets/empty_state.dart';
+import 'package:munchkin_companion/sync/common/event_log.dart';
 import 'widgets/history_row.dart';
 
 class HistoryScreen extends StatelessWidget {

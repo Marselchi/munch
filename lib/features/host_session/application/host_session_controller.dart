@@ -1,6 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../persistence/session_snapshot_store.dart';
+import '../../../sync/client/client_session_engine.dart';
+import '../../../sync/common/discovery_beacon.dart';
 import '../../../sync/common/event_log.dart';
+import '../../../sync/common/network_binder.dart';
+import '../../../sync/node/host_role.dart';
 import '../../../sync/protocol/models.dart';
 import '../../../sync/server/host_session_engine.dart';
 import '../../../sync/server/ws_server.dart';
@@ -38,11 +42,15 @@ class HostSessionState {
 }
 
 class HostSessionNotifier extends Notifier<HostSessionState?> {
+  HostBeaconBroadcaster? _broadcaster;
+
   @override
   HostSessionState? build() {
     ref.onDispose(() {
+      _broadcaster?.stop();
       state?.engine.dispose();
       state?.server.stop();
+      NetworkBinder.unbindFromNetwork();
     });
     return null;
   }
@@ -52,6 +60,9 @@ class HostSessionNotifier extends Notifier<HostSessionState?> {
     String sessionName = 'Манчкин За Столом',
     SessionSnapshot? resumeFromSnapshot,
   }) async {
+    // Bind Android process to physical Wi-Fi (excluding VPN)
+    await NetworkBinder.bindToPhysicalWifi();
+
     // 1. Create engine
     final engine = HostSessionEngine(
       hostPlayerName: hostName,
@@ -62,6 +73,13 @@ class HostSessionNotifier extends Notifier<HostSessionState?> {
     // Snapshot auto-saving to disk
     engine.onSnapshotChanged = (snapshot) {
       SessionSnapshotStore.saveSnapshot(snapshot);
+      _broadcaster?.updateData(DiscoveryBeaconData(
+        sid: snapshot.sessionId,
+        name: snapshot.name,
+        epoch: snapshot.epoch,
+        ips: state?.hostIps ?? const [],
+        port: state?.port ?? 8787,
+      ));
     };
 
     // 2. Start WebSocket Server
@@ -73,6 +91,19 @@ class HostSessionNotifier extends Notifier<HostSessionState?> {
 
     final actualPort = await server.start();
     final ips = await HostWebSocketServer.getHostIpAddresses();
+
+    engine.updateHostNetworkInfo(ips, actualPort);
+
+    _broadcaster?.stop();
+    final broadcaster = HostBeaconBroadcaster();
+    await broadcaster.start(DiscoveryBeaconData(
+      sid: engine.sessionId,
+      name: engine.sessionName,
+      epoch: engine.snapshot.epoch,
+      ips: ips,
+      port: actualPort,
+    ));
+    _broadcaster = broadcaster;
 
     state = HostSessionState(
       engine: engine,
@@ -88,6 +119,59 @@ class HostSessionNotifier extends Notifier<HostSessionState?> {
         state = state!.copyWith(updateTick: state!.updateTick + 1);
       }
     };
+  }
+
+  void adoptPromotedHost({
+    required ClientSessionEngine clientEngine,
+    required HostWebSocketServer server,
+    required HostRole hostRole,
+  }) {
+    if (clientEngine.node == null) return;
+    final hostEngine = HostSessionEngine.fromNode(clientEngine.node!, hostRole);
+
+    hostEngine.onSnapshotChanged = (snapshot) {
+      SessionSnapshotStore.saveSnapshot(snapshot);
+      _broadcaster?.updateData(DiscoveryBeaconData(
+        sid: snapshot.sessionId,
+        name: snapshot.name,
+        epoch: snapshot.epoch,
+        ips: clientEngine.hostIps,
+        port: server.port,
+      ));
+    };
+
+    _broadcaster?.stop();
+    final broadcaster = HostBeaconBroadcaster();
+    broadcaster.start(DiscoveryBeaconData(
+      sid: hostEngine.sessionId,
+      name: hostEngine.sessionName,
+      epoch: hostEngine.snapshot.epoch,
+      ips: clientEngine.hostIps,
+      port: server.port,
+    ));
+    _broadcaster = broadcaster;
+
+    state = HostSessionState(
+      engine: hostEngine,
+      server: server,
+      hostIps: clientEngine.hostIps,
+      port: server.port,
+      updateTick: 0,
+    );
+
+    hostEngine.onStateUpdated = () {
+      if (state != null) {
+        state = state!.copyWith(updateTick: state!.updateTick + 1);
+      }
+    };
+  }
+
+  void transferHost(String targetPlayerId) {
+    state?.engine.transferHost(targetPlayerId);
+  }
+
+  void nominateDeputy(String playerId) {
+    state?.engine.nominateDeputy(playerId);
   }
 
   bool applyLevelChange({
@@ -159,8 +243,11 @@ class HostSessionNotifier extends Notifier<HostSessionState?> {
     if (state != null) {
       final sid = state!.engine.sessionId;
       state!.engine.endSession();
+      await _broadcaster?.stop();
+      _broadcaster = null;
       await state!.server.stop();
       await SessionSnapshotStore.deleteSnapshot(sid);
+      await NetworkBinder.unbindFromNetwork();
       state = null;
     }
   }
@@ -242,4 +329,9 @@ final hostIpsProvider = Provider<List<String>>((ref) {
 /// Host port for QR code and manual connection.
 final hostPortProvider = Provider<int>((ref) {
   return ref.watch(hostSessionProvider.select((s) => s?.port ?? 8787));
+});
+
+/// Detects if the host is running via hotspot while a VPN tunnel is active.
+final hostHotspotVpnWarningProvider = FutureProvider.autoDispose<bool>((ref) async {
+  return await HostWebSocketServer.isHotspotWithVpnActive();
 });

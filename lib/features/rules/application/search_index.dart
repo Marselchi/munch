@@ -152,7 +152,7 @@ class SearchIndex {
 
         final rec = TextRecord(
           recordId: block.id,
-          ownerEntityId: block.relatedEntityIds.isNotEmpty ? block.relatedEntityIds.first : null,
+          ownerEntityId: null, // General rule blocks do not belong to an entity
           source: TextSourceKind.generalBlock,
           title: block.title,
           rawText: raw,

@@ -27,6 +27,12 @@ abstract final class AppConstants {
   static const Duration seatGracePeriod = Duration(minutes: 5);
   static const Duration snapshotDebounce = Duration(milliseconds: 500);
 
+  // Discovery and Failover
+  static const int discoveryPort = 41534;
+  static const Duration discoveryBeaconInterval = Duration(seconds: 2);
+  static const Duration failoverGracePeriod = Duration(seconds: 8);
+  static const Duration failoverRankInterval = Duration(seconds: 3);
+
   // Search
   static const int maxEntitySearchResults = 8;
   static const int maxTextSearchResults = 30;
