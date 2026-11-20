@@ -73,6 +73,7 @@ class _TraitsPickerSheetState extends State<TraitsPickerSheet> {
     const priority = [
       'class',
       'race',
+      'faction',
       'mojo',
       'power',
       'style',

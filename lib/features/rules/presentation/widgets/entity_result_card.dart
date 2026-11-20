@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../domain/rules_category.dart';
 import '../../domain/rules_entities.dart';
 
 class EntityResultCard extends StatelessWidget {
@@ -13,17 +14,21 @@ class EntityResultCard extends StatelessWidget {
   });
 
   String _formatKind(String kind) {
-    return switch (kind.toLowerCase()) {
-      'class' => 'Класс',
-      'race' => 'Раса',
-      _ => kind.toUpperCase(),
-    };
+    return RuleCategoryType.fromKind(kind).title;
   }
 
   Color _getKindColor(String kind) {
     return switch (kind.toLowerCase()) {
       'class' => AppColors.accentBlue,
       'race' => AppColors.accentGreen,
+      'faction' => AppColors.accentFaction,
+      'mojo' => const Color(0xFF4CAF50),
+      'power' => const Color(0xFFAB47BC),
+      'style' => const Color(0xFFFF7043),
+      'accent' => const Color(0xFF42A5F5),
+      'steed' => const Color(0xFFFFA726),
+      'hireling' => const Color(0xFF8D6E63),
+      'madness' => const Color(0xFF9C27B0),
       _ => AppColors.primaryGold,
     };
   }

@@ -16,6 +16,33 @@ class EntityDetailScreen extends StatelessWidget {
     return RuleCategoryType.fromKind(kind).title;
   }
 
+  String _formatSet(String setId) {
+    return switch (setId.toLowerCase()) {
+      'core' => 'Базовый Манчкин',
+      'exp2' => 'Манчкин 2: Дикий топор',
+      'exp3' => 'Манчкин 3: Клирические ошибки',
+      'exp4' => 'Манчкин 4: Тяга к коняге',
+      'exp5' => 'Манчкин 5: Следопуты',
+      'exp6' => 'Манчкин 6: Безбашенные подземелья',
+      'exp7' => 'Манчкин 7: Двуручный чит',
+      'exp8' => 'Манчкин 8: В хвост и в гриву',
+      'exp9' => 'Манчкин 9: Пранк юрского периода',
+      'exp10' => 'Манчкин 10: Искривление времени',
+      'm2e' => 'Манчкин 2.0',
+      'pathfinder' => 'Манчкин Pathfinder',
+      'apocalypse' => 'Манчкин Апокалипсис',
+      'cthulhu' => 'Манчкин Ктулху',
+      'zombies' => 'Манчкин Зомби',
+      'booty' => 'Пиратский Манчкин',
+      'super' => 'Супер Манчкин',
+      'star' => 'Звёздный Манчкин',
+      'good_bad' => 'Хороший, плохой, Манчкин',
+      'bites' => 'Вампирский Манчкин',
+      'fu' => 'Манчкин Фу',
+      _ => setId,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,7 +124,7 @@ class EntityDetailScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Набор: ${entity.setId}',
+                          'Набор: ${_formatSet(entity.setId)}',
                           style: const TextStyle(
                             fontSize: 12,
                             color: AppColors.textMuted,

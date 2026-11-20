@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:munchkin_companion/core/constants/app_constants.dart';
@@ -421,24 +422,57 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 480),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Spacer(),
-                  // Minimalist Clean Title
-                  const Text(
-                    'МАНЧКИН',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 4,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const Spacer(),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: math.max(0, constraints.maxHeight - 32)),
+                    child: IntrinsicHeight(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Spacer(),
+                          Center(
+                            child: Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryGold.withOpacity(0.12),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: AppColors.primaryGold.withOpacity(0.4), width: 1.5),
+                              ),
+                              child: const Icon(
+                                Icons.shield_rounded,
+                                size: 28,
+                                color: AppColors.primaryGold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            'МАНЧКИН',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 4,
+                              color: AppColors.primaryGold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'OFFLINE COMPANION & RULES',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 1.8,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          const Spacer(),
 
                   // Live active host session card
                   if (activeHost != null) ...[
@@ -733,8 +767,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
           ),
-        ),
-      ),
-    );
+        );
+      },
+    ),
+  ),
+),
+),
+);
   }
 }

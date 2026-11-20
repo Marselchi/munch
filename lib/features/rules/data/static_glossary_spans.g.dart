@@ -97,6 +97,37 @@ abstract final class StaticGlossarySpans {
       StaticSpan(start: 500, end: 506, termId: 'term_steed'),
       StaticSpan(start: 538, end: 552, termId: 'term_big_item'),
     ],
+    "1. Класс Культист: В отличие от других классов, из Культизма НЕЛЬЗЯ выйти добровольно! Карты Проклятий и Непотребств часто насильно обращают манчкинов в Культистов. Если в колоде заканчиваются карты Культиста, следующий обращенный забирает карту у текущего культиста с наивысшим уровнем.\n\n2. Конец света Древних: Если ВСЕ игроки за столом стали Культистами, игра немедленно заканчивается победой того культиста, у которого наивысший Уровень!\n\n3. Карты Безумия: Дают постоянные безумные штрафы и причуды, пока не исцелены сбросом Сокровищ или специальными картами.": [
+      StaticSpan(start: 3, end: 8, termId: 'term_class'),
+      StaticSpan(start: 39, end: 46, termId: 'term_class'),
+      StaticSpan(start: 93, end: 102, termId: 'term_curse'),
+      StaticSpan(start: 105, end: 116, termId: 'term_bad_stuff'),
+      StaticSpan(start: 279, end: 286, termId: 'term_level'),
+      StaticSpan(start: 304, end: 311, termId: 'term_ancient'),
+      StaticSpan(start: 433, end: 440, termId: 'term_level'),
+      StaticSpan(start: 452, end: 459, termId: 'term_madness'),
+      StaticSpan(start: 529, end: 537, termId: 'term_treasure'),
+    ],
+    "1. Скакуны (Манчкин 4): Каждый игрок может иметь не более 1 Скакуна. Скакун считается Большой шмоткой, но НЕ занимает ваш лимит Больших шмоток! Скакун дает указанный постоянный бонус к силе и/или смывке. На Скакунов можно играть Усилители шмоток.\n\n2. Наёмнички (Манчкин 4 & 5): Каждый игрок может иметь 1 Наёмника. Наёмник может нести для вас 1 дополнительную шмотку (даже Большую или ту, которую ваш класс/раса не может использовать) и давать вам её бонус. В любой момент боя вы можете пожертвовать Наёмником ради гарантированной автоматической смывки от всех монстров!": [
+      StaticSpan(start: 3, end: 10, termId: 'term_steed'),
+      StaticSpan(start: 60, end: 67, termId: 'term_steed'),
+      StaticSpan(start: 69, end: 75, termId: 'term_steed'),
+      StaticSpan(start: 94, end: 101, termId: 'term_item'),
+      StaticSpan(start: 128, end: 142, termId: 'term_big_item'),
+      StaticSpan(start: 144, end: 150, termId: 'term_steed'),
+      StaticSpan(start: 196, end: 202, termId: 'term_runaway'),
+      StaticSpan(start: 207, end: 215, termId: 'term_steed'),
+      StaticSpan(start: 229, end: 245, termId: 'term_enhancer'),
+      StaticSpan(start: 305, end: 313, termId: 'term_hireling'),
+      StaticSpan(start: 315, end: 322, termId: 'term_hireling'),
+      StaticSpan(start: 360, end: 366, termId: 'term_item'),
+      StaticSpan(start: 401, end: 406, termId: 'term_class'),
+      StaticSpan(start: 407, end: 411, termId: 'term_race'),
+      StaticSpan(start: 473, end: 476, termId: 'term_combat'),
+      StaticSpan(start: 500, end: 509, termId: 'term_hireling'),
+      StaticSpan(start: 546, end: 552, termId: 'term_runaway'),
+      StaticSpan(start: 561, end: 569, termId: 'term_monster'),
+    ],
     "12 уникальных стилей кунг-фу (Обезьяны, Дракона, Журавля и т.д.), дающих боевые бонусы и приемы.": [
       StaticSpan(start: 14, end: 20, termId: 'term_style'),
     ],
@@ -162,6 +193,12 @@ abstract final class StaticGlossarySpans {
       StaticSpan(start: 2, end: 5, termId: 'term_combat'),
       StaticSpan(start: 143, end: 151, termId: 'term_treasure'),
     ],
+    "В бою ты можешь сбросить до 3 карт с руки. Каждая сброшенная карта дает тебе бонус +2 к боевой силе, но накладывает штраф -1 на смывку в этом бою.": [
+      StaticSpan(start: 2, end: 5, termId: 'term_combat'),
+      StaticSpan(start: 88, end: 99, termId: 'term_combat_strength'),
+      StaticSpan(start: 128, end: 134, termId: 'term_runaway'),
+      StaticSpan(start: 142, end: 145, termId: 'term_combat'),
+    ],
     "В бою ты можешь сбросить до 3 карт. Каждая сброшенная карта дает бонус +1 к твоей боевой силе (в редакции 2.0 дает +3).": [
       StaticSpan(start: 2, end: 5, termId: 'term_combat'),
       StaticSpan(start: 82, end: 93, termId: 'term_combat_strength'),
@@ -180,6 +217,12 @@ abstract final class StaticGlossarySpans {
       StaticSpan(start: 135, end: 138, termId: 'term_combat'),
       StaticSpan(start: 150, end: 156, termId: 'term_monster'),
     ],
+    "В колоде «Манчкин Pathfinder» действует специальное боевое правило подкидывания монстров: если в бою уже сражается Гоблин или Нежить, любой игрок может подкинуть в этот же бой еще одного Гоблина (к гоблину) или Нежить (к нежити) прямо из своей руки БЕЗ карты «Бродячая тварь»! Несколько игроков могут объединять орды монстров в одну схватку.": [
+      StaticSpan(start: 80, end: 88, termId: 'term_monster'),
+      StaticSpan(start: 97, end: 100, termId: 'term_combat'),
+      StaticSpan(start: 172, end: 175, termId: 'term_combat'),
+      StaticSpan(start: 317, end: 325, termId: 'term_monster'),
+    ],
     "В конце своего хода посчитай карты в руке. Максимальный лимит руки равен 5 картам (для Дварфа — 6). Если карт больше лимита, отдай лишние карты живому игроку с наименьшим уровнем. Если таких игроков несколько, раздели карты поровну. Если ты сам являешься игроком с наименьшим уровнем, лишние карты просто сбрасываются в сброс.": [
       StaticSpan(start: 171, end: 178, termId: 'term_level'),
       StaticSpan(start: 276, end: 283, termId: 'term_level'),
@@ -188,6 +231,12 @@ abstract final class StaticGlossarySpans {
       StaticSpan(start: 58, end: 63, termId: 'term_laser'),
       StaticSpan(start: 215, end: 221, termId: 'term_runaway'),
       StaticSpan(start: 238, end: 245, termId: 'term_ship'),
+    ],
+    "В любой бой (свой или чужой) ты можешь сбросить карту монстра из руки в качестве разового бонуса. Бонус равен удвоенному количеству Сокровищ, указанному на карте этого монстра.": [
+      StaticSpan(start: 8, end: 11, termId: 'term_combat'),
+      StaticSpan(start: 54, end: 61, termId: 'term_monster'),
+      StaticSpan(start: 132, end: 140, termId: 'term_treasure'),
+      StaticSpan(start: 168, end: 175, termId: 'term_monster'),
     ],
     "В любой момент, включая бой, сбрось две карты с руки и/или из игры и возьми верхнее Сокровище в закрытую. Если эту карту можно применить прямо сейчас, разрешается сделать это немедленно!": [
       StaticSpan(start: 24, end: 27, termId: 'term_combat'),
@@ -284,6 +333,14 @@ abstract final class StaticGlossarySpans {
       StaticSpan(start: 184, end: 190, termId: 'term_level'),
       StaticSpan(start: 191, end: 198, termId: 'term_monster'),
     ],
+    "Вместо боя ты можешь сбросить монстра и еще одну карту с руки, чтобы наложить «Непотребство» этого монстра на другого игрока как Проклятие (не действует, если непотребство приводит к смерти).": [
+      StaticSpan(start: 7, end: 10, termId: 'term_combat'),
+      StaticSpan(start: 30, end: 37, termId: 'term_monster'),
+      StaticSpan(start: 79, end: 91, termId: 'term_bad_stuff'),
+      StaticSpan(start: 99, end: 106, termId: 'term_monster'),
+      StaticSpan(start: 129, end: 138, termId: 'term_curse'),
+      StaticSpan(start: 159, end: 171, termId: 'term_bad_stuff'),
+    ],
     "Вместо обычной бардовской удачи: возьми на ДВА Сокровища больше положенного и сразу сбрось любые два из всех полученных.": [
       StaticSpan(start: 47, end: 56, termId: 'term_treasure'),
     ],
@@ -357,6 +414,12 @@ abstract final class StaticGlossarySpans {
       StaticSpan(start: 299, end: 305, termId: 'term_monster'),
       StaticSpan(start: 316, end: 328, termId: 'term_bad_stuff'),
       StaticSpan(start: 330, end: 342, termId: 'term_bad_stuff'),
+    ],
+    "Если поднятый твоей классовой способностью монстр погибает в бою, после боя ты забираешь его карту себе в руку вместо сброса.": [
+      StaticSpan(start: 20, end: 29, termId: 'term_class'),
+      StaticSpan(start: 43, end: 49, termId: 'term_monster'),
+      StaticSpan(start: 61, end: 64, termId: 'term_combat'),
+      StaticSpan(start: 72, end: 75, termId: 'term_combat'),
     ],
     "Если при вышибании двери Монстра не было, у тебя есть выбор из двух действий:\n1. Поиск неприятностей: сыграй карту Монстра со своей руки и сразись с ним по обычным правилам.\n2. Чистка нычек: если ты не хочешь или не можешь драться, возьми вторую карту колоды Дверей в закрытую себе в руку.": [
       StaticSpan(start: 25, end: 32, termId: 'term_monster'),
@@ -459,6 +522,69 @@ abstract final class StaticGlossarySpans {
       StaticSpan(start: 28, end: 39, termId: 'term_combat_strength'),
       StaticSpan(start: 72, end: 79, termId: 'term_ship'),
     ],
+    "Как играть с колодой Печатей (Манчкин Апокалипсис):\n\n1. Подготовка на старте: Карты Печатей тасуются в отдельную стопку и кладутся рубашкой вверх. В начале игры НИ ОДНА печать НЕ открыта!\n\n2. Открытие печатей: Печати срываются только по указанию карт Дверей (например, карта «Срыв печати»), карт Катастроф или Непотребств монстров.\n\n3. Эффект открытой печати: При срыве печати верхняя карта колоды кладется лицом вверх поверх предыдущей. Её мгновенный эффект (например, потеря уровней или сброс карт) срабатывает НЕМЕДЛЕННО. Её постоянное правило действует на ВСЕХ игроков, пока печать открыта.\n\n4. Закрытие печатей: Карты, предписывающие закрыть печать, отправляют верхнюю активную печать в сброс печатей. В игре снова начинает действовать предыдущая открытая печать (если была).\n\n5. КОНЕЦ СВЕТА (Седьмая печать): В момент, когда в игре открывается 7-я активная печать (или колода печатей полностью иссякла), мир гибнет, и игра НЕМЕДЛЕННО завершается! Побеждает не тот, у кого 10-й уровень, а манчкин с НАИВЫСШЕЙ суммарной боевой силой (Уровень + постоянные боевые бонусы надетых шмоток). При равенстве побеждает игрок с более высоким уровнем.": [
+      StaticSpan(start: 21, end: 28, termId: 'term_seal'),
+      StaticSpan(start: 84, end: 91, termId: 'term_seal'),
+      StaticSpan(start: 169, end: 175, termId: 'term_seal'),
+      StaticSpan(start: 201, end: 208, termId: 'term_seal'),
+      StaticSpan(start: 210, end: 216, termId: 'term_seal'),
+      StaticSpan(start: 281, end: 287, termId: 'term_seal'),
+      StaticSpan(start: 296, end: 305, termId: 'term_disaster'),
+      StaticSpan(start: 310, end: 321, termId: 'term_bad_stuff'),
+      StaticSpan(start: 322, end: 330, termId: 'term_monster'),
+      StaticSpan(start: 352, end: 358, termId: 'term_seal'),
+      StaticSpan(start: 370, end: 376, termId: 'term_seal'),
+      StaticSpan(start: 477, end: 484, termId: 'term_level'),
+      StaticSpan(start: 579, end: 585, termId: 'term_seal'),
+      StaticSpan(start: 608, end: 615, termId: 'term_seal'),
+      StaticSpan(start: 647, end: 653, termId: 'term_seal'),
+      StaticSpan(start: 683, end: 689, termId: 'term_seal'),
+      StaticSpan(start: 698, end: 705, termId: 'term_seal'),
+      StaticSpan(start: 761, end: 767, termId: 'term_seal'),
+      StaticSpan(start: 806, end: 812, termId: 'term_seal'),
+      StaticSpan(start: 863, end: 869, termId: 'term_seal'),
+      StaticSpan(start: 882, end: 889, termId: 'term_seal'),
+      StaticSpan(start: 983, end: 990, termId: 'term_level'),
+      StaticSpan(start: 1014, end: 1036, termId: 'term_combat_strength'),
+      StaticSpan(start: 1038, end: 1045, termId: 'term_level'),
+      StaticSpan(start: 1081, end: 1087, termId: 'term_item'),
+      StaticSpan(start: 1136, end: 1143, termId: 'term_level'),
+    ],
+    "Как играть с колодой Подземелий (Манчкин 6 / 6.5, Ктулху 4, Зомби 3):\n\n1. Подготовка на старте: Карты Подземелий двойного формата замешиваются в ОТДЕЛЬНУЮ стопку Подземелий. Карты Порталов (Врат) замешиваются в обычную колоду Дверей.\n\n2. Активация первого Подземелья: Перед началом игры снимите верхнюю карту из колоды Подземелий и положите лицом вверх в центр стола. Игра НАЧИНАЕТСЯ в этом подземелье! Свойства этой комнаты действуют на ВСЕХ игроков без исключения.\n\n3. Вытягивание Портала в открытую: Если игрок при «Вышибании двери» открывает карту Портала, он ОБЯЗАН немедленно разыграть её! Согласно указанию карты Портала (например, «войти в новое подземелье» или «сменить зал»), тянется новая карта Подземелья. Затем этот же игрок вытягивает новую карту Дверей в открытую, продолжая свой ход.\n\n4. Портал в закрытую: Если Портал получен в закрытую (чистка нычек, от щедрот и т.д.), его можно сыграть в любой момент своего хода или сбросить.\n\n5. Несколько активных залов: Если карта портала не велит сбросить текущее подземелье, новое подземелье выкладывается рядом. В игре может быть 2, 3 и более активных подземелий одновременно — все их эффекты и штрафы суммируются!\n\n6. Выход из подземелья: Подземелья сбрасываются только когда специальная карта Портала («Найти выход», «Очистить подземелье») предписывает это.": [
+      StaticSpan(start: 21, end: 31, termId: 'term_dungeon'),
+      StaticSpan(start: 102, end: 112, termId: 'term_dungeon'),
+      StaticSpan(start: 162, end: 172, termId: 'term_dungeon'),
+      StaticSpan(start: 180, end: 188, termId: 'term_portal'),
+      StaticSpan(start: 256, end: 266, termId: 'term_dungeon'),
+      StaticSpan(start: 319, end: 329, termId: 'term_dungeon'),
+      StaticSpan(start: 391, end: 401, termId: 'term_dungeon'),
+      StaticSpan(start: 483, end: 490, termId: 'term_portal'),
+      StaticSpan(start: 552, end: 559, termId: 'term_portal'),
+      StaticSpan(start: 620, end: 627, termId: 'term_portal'),
+      StaticSpan(start: 654, end: 664, termId: 'term_dungeon'),
+      StaticSpan(start: 706, end: 716, termId: 'term_dungeon'),
+      StaticSpan(start: 804, end: 810, termId: 'term_portal'),
+      StaticSpan(start: 828, end: 834, termId: 'term_portal'),
+      StaticSpan(start: 869, end: 878, termId: 'term_charity'),
+      StaticSpan(start: 988, end: 995, termId: 'term_portal'),
+      StaticSpan(start: 1022, end: 1032, termId: 'term_dungeon'),
+      StaticSpan(start: 1040, end: 1050, termId: 'term_dungeon'),
+      StaticSpan(start: 1112, end: 1122, termId: 'term_dungeon'),
+      StaticSpan(start: 1188, end: 1198, termId: 'term_dungeon'),
+      StaticSpan(start: 1200, end: 1210, termId: 'term_dungeon'),
+      StaticSpan(start: 1255, end: 1262, termId: 'term_portal'),
+      StaticSpan(start: 1289, end: 1299, termId: 'term_dungeon'),
+    ],
+    "Как комфортно играть при объединении 2, 3 или 10 дополнений:\n\n1. Формирование колод: Все Двери замешиваются вместе (можно брать по 100-150 карт от каждого набора, если полная колода слишком огромна). Все Сокровища — вместе.\n\n2. Мульти-характеристики: Персонаж может одновременно иметь Класс, Расу, Фракцию, Моджо и Силу! Карты «Супер-манчкин» и «Полукровка» позволяют комбинировать по две карты одного типа.\n\n3. Правило быстрой игры (Fast Play): Для динамичных партий разрешено в фазе вышибания двери тянуть сразу 2 карты Дверей. Если среди них нет монстра — обе карты забираются на руку и можно сразу чистить нычки.\n\n4. Однотипные монстры: Монстры со схожими типами (Андеды/Нежить к Нежити, Гоблины к Гоблинам, Акулы к Акулам) могут подкидываться в бой без карты «Бродячая тварь»!": [
+      StaticSpan(start: 204, end: 213, termId: 'term_treasure'),
+      StaticSpan(start: 285, end: 290, termId: 'term_class'),
+      StaticSpan(start: 292, end: 296, termId: 'term_race'),
+      StaticSpan(start: 307, end: 312, termId: 'term_mojo'),
+      StaticSpan(start: 549, end: 556, termId: 'term_monster'),
+      StaticSpan(start: 632, end: 639, termId: 'term_monster'),
+      StaticSpan(start: 641, end: 648, termId: 'term_monster'),
+      StaticSpan(start: 750, end: 753, termId: 'term_combat'),
+    ],
     "Карты Сил имеют ранг от 1 до 3. Суммарный ранг активных Сил не может превышать текущий уровень манчкина.": [
       StaticSpan(start: 0, end: 9, termId: 'term_power'),
       StaticSpan(start: 87, end: 94, termId: 'term_level'),
@@ -503,15 +629,26 @@ abstract final class StaticGlossarySpans {
       StaticSpan(start: 199, end: 207, termId: 'term_treasure'),
       StaticSpan(start: 217, end: 224, termId: 'term_monster'),
     ],
+    "Когда ты «Ищешь неприятности» (сражаешься с монстром с руки в свой ход), можешь сбросить до 3 карт из руки: каждая сброшенная карта дает бонус +2 против этого монстра.": [
+      StaticSpan(start: 44, end: 52, termId: 'term_monster'),
+      StaticSpan(start: 159, end: 166, termId: 'term_monster'),
+    ],
     "Когда ты побеждаешь монстра один или с помощником, возьми на одну карту Сокровищ больше положенного в закрытую, затем выбери и сбрось одну карту.": [
       StaticSpan(start: 20, end: 27, termId: 'term_monster'),
       StaticSpan(start: 72, end: 80, termId: 'term_treasure'),
+    ],
+    "Когда ты побеждаешь монстра со свойством «Нежить» (в одиночку или как главный боец), возьми 1 дополнительную карту Дверей в закрытую.": [
+      StaticSpan(start: 20, end: 27, termId: 'term_monster'),
     ],
     "Когда ты получаешь проклятие, ты можешь сбросить 1 уровень вместо выполнения эффекта проклятия (если это не снизит уровень ниже 1).": [
       StaticSpan(start: 19, end: 28, termId: 'term_curse'),
       StaticSpan(start: 51, end: 58, termId: 'term_level'),
       StaticSpan(start: 85, end: 94, termId: 'term_curse'),
       StaticSpan(start: 115, end: 122, termId: 'term_level'),
+    ],
+    "Когда фамильяр нейтрализует Проклятие при вышибании двери, ты забираешь эту карту Проклятия прямо к себе в руку вместо сброса.": [
+      StaticSpan(start: 28, end: 37, termId: 'term_curse'),
+      StaticSpan(start: 82, end: 91, termId: 'term_curse'),
     ],
     "Колоды Дверей и Сокровищ тщательно перемешиваются и кладутся на стол рубашкой вверх. Каждый игрок берет по 4 карты из колоды Дверей и 4 карты из колоды Сокровищ в закрытую. Игроки могут сразу выложить перед собой любые карты Рас, Классов и Шмоток, которые они могут законно нести. Первым ходит владелец игры или тот, кто выше всех выбросил на кубике.": [
       StaticSpan(start: 16, end: 24, termId: 'term_treasure'),
@@ -544,6 +681,10 @@ abstract final class StaticGlossarySpans {
     "Лимит руки равен 5 картам (6 для Дварфа). Излишки отдаются живым игрокам с наименьшим уровнем.": [
       StaticSpan(start: 86, end: 93, termId: 'term_level'),
     ],
+    "Любая карта в твоей руке может быть сброшена вместо карты «Бродячая тварь», чтобы подкинуть монстра из руки в любой бой.": [
+      StaticSpan(start: 92, end: 99, termId: 'term_monster'),
+      StaticSpan(start: 116, end: 119, termId: 'term_combat'),
+    ],
     "Любая неподходящая шмотка может быть экипирована со штрафом -1 к боевой силе.": [
       StaticSpan(start: 19, end: 25, termId: 'term_item'),
       StaticSpan(start: 65, end: 76, termId: 'term_combat_strength'),
@@ -556,6 +697,10 @@ abstract final class StaticGlossarySpans {
       StaticSpan(start: 216, end: 219, termId: 'term_combat'),
       StaticSpan(start: 228, end: 235, termId: 'term_monster'),
       StaticSpan(start: 251, end: 264, termId: 'term_combat_strength'),
+    ],
+    "Любые разовые шмотки (зелья, порошки и склянки), сыгранные тобой в бою с любой стороны, дают удвоенный боевой бонус (бонус +2 считается как +4, +3 — как +6 и т.д.).": [
+      StaticSpan(start: 14, end: 20, termId: 'term_item'),
+      StaticSpan(start: 67, end: 70, termId: 'term_combat'),
     ],
     "Моджо — особая характеристика зомби, выполняющая роль класса: Атомное зомби, Чумное зомби, Вуду зомби или Лоскутное зомби. В смешанной игре Моджо является отдельной категорией от обычных Классов: манчкин может иметь одновременно 1 Класс, 1 Расу и 1 Моджо!": [
       StaticSpan(start: 0, end: 5, termId: 'term_mojo'),
@@ -644,6 +789,14 @@ abstract final class StaticGlossarySpans {
     ],
     "Один раз в свой ход, вне боя: сбрось карту с руки и укради случайную карту прямо из руки другого игрока. Бросок кубика не нужен!": [
       StaticSpan(start: 25, end: 28, termId: 'term_combat'),
+    ],
+    "Один раз за бой ты можешь сбросить 3 любые карты с руки или из игры, чтобы взять верхнего монстра из сброса Дверей и ввести его в текущий бой как Нежить.": [
+      StaticSpan(start: 12, end: 15, termId: 'term_combat'),
+      StaticSpan(start: 90, end: 97, termId: 'term_monster'),
+      StaticSpan(start: 138, end: 141, termId: 'term_combat'),
+    ],
+    "Один раз за свой ход перед вышибанием двери ты можешь сбросить 1 карту с руки, чтобы забрать верхнюю карту монстра из сброса Дверей в свою руку.": [
+      StaticSpan(start: 107, end: 114, termId: 'term_monster'),
     ],
     "Один раз за ход вне боя ты можешь предложить любую шмотку из игры в обмен на одну из 3 верхних карт сброса Сокровищ.": [
       StaticSpan(start: 20, end: 23, termId: 'term_combat'),
@@ -783,6 +936,11 @@ abstract final class StaticGlossarySpans {
       StaticSpan(start: 82, end: 89, termId: 'term_runaway'),
       StaticSpan(start: 99, end: 106, termId: 'term_monster'),
     ],
+    "При продаже шмоток за победные уровни каждая отдельная проданная тобой шмотка оценивается минимум в 300 Голдов (даже если на ней указана меньшая цена или «Без цены»).": [
+      StaticSpan(start: 12, end: 18, termId: 'term_item'),
+      StaticSpan(start: 31, end: 37, termId: 'term_level'),
+      StaticSpan(start: 71, end: 77, termId: 'term_item'),
+    ],
     "При равенстве боевой силы с монстром победа остается за воином.": [
       StaticSpan(start: 14, end: 25, termId: 'term_combat_strength'),
       StaticSpan(start: 28, end: 36, termId: 'term_monster'),
@@ -807,6 +965,10 @@ abstract final class StaticGlossarySpans {
       StaticSpan(start: 0, end: 9, termId: 'term_curse'),
       StaticSpan(start: 163, end: 166, termId: 'term_combat'),
       StaticSpan(start: 220, end: 229, termId: 'term_curse'),
+    ],
+    "Разовые шмотки, сыгранные тобой в любом бою, дают дополнительный бонус +3 сверх удвоенного бонуса.": [
+      StaticSpan(start: 8, end: 14, termId: 'term_item'),
+      StaticSpan(start: 40, end: 43, termId: 'term_combat'),
     ],
     "Сброс 4 карт с руки позволяет отменить открытие любой Сивучати (кроме 7-й победной печати Конца Света).": [
       StaticSpan(start: 54, end: 62, termId: 'term_seal'),
@@ -986,6 +1148,9 @@ abstract final class StaticGlossarySpans {
       StaticSpan(start: 35, end: 38, termId: 'term_combat'),
       StaticSpan(start: 79, end: 82, termId: 'term_combat'),
     ],
+    "Твой фамильяр оберегает тебя: если при Вышибании Двери ты вытягиваешь Проклятие, оно сбрасывается без вреда для тебя.": [
+      StaticSpan(start: 70, end: 79, termId: 'term_curse'),
+    ],
     "Твоя способность «Рогаткер» работает в твоем собственном бою (сброс дает +2 боевой силы за карту).": [
       StaticSpan(start: 57, end: 60, termId: 'term_combat'),
       StaticSpan(start: 76, end: 87, termId: 'term_combat_strength'),
@@ -995,6 +1160,9 @@ abstract final class StaticGlossarySpans {
     ],
     "Тебя нельзя принудить помогать в бою ни картами, ни способностями. Лишние карты при милосердии сбрасываются в сброс, а не отдаются слабейшим.": [
       StaticSpan(start: 33, end: 36, termId: 'term_combat'),
+    ],
+    "Ты больше не получаешь штрафов к броску на смывку при использовании способности «Стойкость».": [
+      StaticSpan(start: 43, end: 49, termId: 'term_runaway'),
     ],
     "Ты можешь вмешиваться в чужой бой, в котором ты не основной участник и не помощник: сбрось карту и дай -2 игроку либо монстру. Разрешено выпустить до двух таких стрел за чужой бой (до -4 суммарно).": [
       StaticSpan(start: 30, end: 33, termId: 'term_combat'),
@@ -1011,6 +1179,10 @@ abstract final class StaticGlossarySpans {
     "Ты можешь нести любое количество Больших шмоток (обычно только 1).": [
       StaticSpan(start: 33, end: 47, termId: 'term_big_item'),
     ],
+    "Ты можешь сбрасывать любые карты Броников и Головняков из своей руки или игры как разовый бонус в бою для любой стороны, равный их печатному бонусу.": [
+      StaticSpan(start: 98, end: 101, termId: 'term_combat'),
+      StaticSpan(start: 131, end: 140, termId: 'term_seal'),
+    ],
     "Ты можешь сбросить всю руку (минимум 3 карты), чтобы сбросить одного монстра без боя. Ты не получаешь за него уровней, но получаешь его Сокровища.": [
       StaticSpan(start: 69, end: 76, termId: 'term_monster'),
       StaticSpan(start: 81, end: 84, termId: 'term_combat'),
@@ -1021,10 +1193,19 @@ abstract final class StaticGlossarySpans {
       StaticSpan(start: 36, end: 43, termId: 'term_monster'),
       StaticSpan(start: 99, end: 110, termId: 'term_combat_strength'),
     ],
+    "Ты полностью игнорируешь любые штрафы на смывку от монстров, карт и свойств (автоматический провал смывки по особым картам сохраняется).": [
+      StaticSpan(start: 41, end: 47, termId: 'term_runaway'),
+      StaticSpan(start: 51, end: 59, termId: 'term_monster'),
+      StaticSpan(start: 99, end: 105, termId: 'term_runaway'),
+    ],
     "Ты получаешь 1 уровень за каждого монстра, побежденного в бою, в котором ты помог другому игроку.": [
       StaticSpan(start: 15, end: 22, termId: 'term_level'),
       StaticSpan(start: 34, end: 41, termId: 'term_monster'),
       StaticSpan(start: 58, end: 61, termId: 'term_combat'),
+    ],
+    "Ты получаешь постоянный бонус +1 на кубике при попытке Смывки от любых монстров.": [
+      StaticSpan(start: 55, end: 61, termId: 'term_runaway'),
+      StaticSpan(start: 71, end: 79, termId: 'term_monster'),
     ],
     "Тяни сокровище в закрытую после помощи в бою.": [
       StaticSpan(start: 5, end: 14, termId: 'term_treasure'),
@@ -1041,6 +1222,11 @@ abstract final class StaticGlossarySpans {
       StaticSpan(start: 153, end: 169, termId: 'term_enhancer'),
       StaticSpan(start: 228, end: 234, termId: 'term_item'),
       StaticSpan(start: 262, end: 274, termId: 'term_bad_stuff'),
+    ],
+    "Фракции в «Манчкин Pathfinder» заменяют привычные расы оригинальной игры, однако при смешивании наборов они считаются отдельным типом карт! Манчкин может одновременно иметь Класс, Расу и Фракцию. По умолчанию манчкин начинает без фракции и может иметь не более одной фракции (две при наличии карты «Двойная фракция» или «Двойная жизнь»). Сбросить фракцию можно добровольно в любой момент своего хода.": [
+      StaticSpan(start: 50, end: 54, termId: 'term_race'),
+      StaticSpan(start: 173, end: 178, termId: 'term_class'),
+      StaticSpan(start: 180, end: 184, termId: 'term_race'),
     ],
     "Ход манчкина состоит из строгой последовательности фаз:\n1. Вышибание двери: открой верхнюю карту колоды Дверей в открытую.\n2. Бой (если выпал Монстр) ИЛИ Чистка нычек / Поиск неприятностей (если монстра не было).\n3. От щедрот (Charity): сбрось излишки карт сверх лимита руки (обычно 5 карт).": [
       StaticSpan(start: 126, end: 129, termId: 'term_combat'),

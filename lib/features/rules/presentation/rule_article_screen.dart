@@ -90,16 +90,16 @@ class RuleArticleScreen extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF262932),
+                        color: AppColors.primaryGold.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFF434856)),
+                        border: Border.all(color: AppColors.primaryGold.withOpacity(0.4)),
                       ),
                       child: Text(
                         badge,
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                          color: AppColors.primaryGold,
                         ),
                       ),
                     ),

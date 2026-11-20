@@ -6,6 +6,7 @@ import 'rules_entities.dart';
 enum RuleCategoryType {
   classes('class', 'Классы', 'Классовые карты и специализации'),
   races('race', 'Расы', 'Биологические виды и расовые особенности'),
+  factions('faction', 'Фракции', 'Ордены и фракции Манчкин Pathfinder'),
   mojos('mojo', 'Моджо', 'Зомби-модификаторы и вариации'),
   powers('power', 'Силы', 'Сверхсилы, вампирские и супер-способности'),
   styles('style', 'Стили', 'Боевые искусства и восточные стили'),
@@ -34,6 +35,8 @@ enum RuleCategoryType {
         return RuleCategoryType.classes;
       case 'race':
         return RuleCategoryType.races;
+      case 'faction':
+        return RuleCategoryType.factions;
       case 'mojo':
         return RuleCategoryType.mojos;
       case 'power':

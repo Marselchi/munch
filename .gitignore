@@ -35,6 +35,7 @@ migrate_working_dir/
 /coverage/
 
 *.pdf
+*.bat
 # Symbolication related
 app.*.symbols
 

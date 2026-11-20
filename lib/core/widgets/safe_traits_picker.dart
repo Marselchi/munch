@@ -74,6 +74,7 @@ class _SafeTraitsPickerSheetState extends State<SafeTraitsPickerSheet> {
     const priority = [
       'class',
       'race',
+      'faction',
       'mojo',
       'power',
       'style',

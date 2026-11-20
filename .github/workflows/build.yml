@@ -66,6 +66,9 @@ jobs:
       contents: write
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
       - name: Download Android APK
         uses: actions/download-artifact@v8
         with:
@@ -83,9 +86,10 @@ jobs:
         with:
           tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'latest' }}
           name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'Latest Release' }}
+          body_path: CHANGELOG.md
           files: |
             release-assets/app-release.apk
             release-assets/app-release.aab
           draft: false
           prerelease: false
-          generate_release_notes: true
+          generate_release_notes: false
