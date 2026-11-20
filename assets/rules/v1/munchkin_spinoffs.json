@@ -1251,58 +1251,6 @@
       }
     },
     {
-      "id": "spinoff.fu.styles",
-      "kind": "style",
-      "title": "Стили боевых искусств (Martial Arts Styles)",
-      "aliases": [
-        "стили",
-        "стиль кунг-фу",
-        "martial arts styles",
-        "styles"
-      ],
-      "setId": "fu",
-      "ruleSections": [
-        {
-          "heading": "Карты Стилей",
-          "text": "12 уникальных стилей кунг-фу (Обезьяны, Дракона, Журавля и т.д.), дающих боевые бонусы и приемы."
-        }
-      ],
-      "epic": {
-        "ruleSections": [
-          {
-            "heading": "Эпические правила для стилей",
-            "text": "Эпические правила для отдельных карт стилей ОТСУТСТВУЮТ. Согласно официальным правилам Epic Munchkin, эпический уровень классов Фу позволяет персонажу нести на 1 стиль больше обычного лимита."
-          }
-        ]
-      }
-    },
-    {
-      "id": "spinoff.general.powers",
-      "kind": "power",
-      "title": "Силы и Происхождения (Powers & Origins)",
-      "aliases": [
-        "силы",
-        "суперсилы",
-        "powers",
-        "origins"
-      ],
-      "setId": "super",
-      "ruleSections": [
-        {
-          "heading": "Ранг Сил",
-          "text": "Карты Сил имеют ранг от 1 до 3. Суммарный ранг активных Сил не может превышать текущий уровень манчкина."
-        }
-      ],
-      "epic": {
-        "ruleSections": [
-          {
-            "heading": "Эпические правила для Сил",
-            "text": "Индивидуальные эпические способности для конкретных карт Сил ОТСУТСТВУЮТ. Официальное эпическое правило едино: максимальный суммарный ранг Сил манчкина масштабируется вместе с эпическим уровнем вплоть до 20."
-          }
-        ]
-      }
-    },
-    {
       "id": "spinoff.pathfinder.alchemist",
       "kind": "class",
       "title": "Алхимик (Alchemist)",
@@ -1518,6 +1466,489 @@
           }
         ]
       }
+    },
+    {
+      "id": "spinoff.fu.style.banana",
+      "kind": "style",
+      "title": "Банановый стиль (Banana Fu)",
+      "aliases": [
+        "банановый стиль",
+        "банан-фу",
+        "banana fu"
+      ],
+      "setId": "fu",
+      "ruleSections": [
+        {
+          "heading": "Банановая кожура",
+          "text": "Боевой бонус +2. В бою против животных и монстров с уровнем 10 и выше дает суммарный бонус +4."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.fu.style.bull",
+      "kind": "style",
+      "title": "Бычье кунг-фу (Bull Kung Fu)",
+      "aliases": [
+        "бычье кунг-фу",
+        "стиль быка",
+        "bull kung fu"
+      ],
+      "setId": "fu",
+      "ruleSections": [
+        {
+          "heading": "Таранный разбег",
+          "text": "Боевой бонус +2. При самостоятельном поиске неприятностей дает дополнительно +2 боевой силы."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.fu.style.clown",
+      "kind": "style",
+      "title": "Клоун-фу (Clown Fu)",
+      "aliases": [
+        "клоун-фу",
+        "клоунский стиль",
+        "clown fu"
+      ],
+      "setId": "fu",
+      "ruleSections": [
+        {
+          "heading": "Шутливый трюк",
+          "text": "Боевой бонус +2. Позволяет сбросить карту с руки, чтобы заставить любого игрока перебросить кубик при смывке."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.fu.style.feather",
+      "kind": "style",
+      "title": "Пернатое кунг-фу (Feather Fu)",
+      "aliases": [
+        "пернатое кунг-фу",
+        "перьевой стиль",
+        "feather fu"
+      ],
+      "setId": "fu",
+      "ruleSections": [
+        {
+          "heading": "Легкость перышка",
+          "text": "Боевой бонус +2. Дает постоянный бонус +1 на смывку от всех монстров."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.fu.style.fox",
+      "kind": "style",
+      "title": "Лисье кунг-фу (Fox Kung Fu)",
+      "aliases": [
+        "лисье кунг-фу",
+        "стиль лисы",
+        "fox kung fu"
+      ],
+      "setId": "fu",
+      "ruleSections": [
+        {
+          "heading": "Лисья хитрость",
+          "text": "Боевой бонус +2. После победы над монстром без посторонней помощи позволяет взять верхнее сокровище в закрытую."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.fu.style.iron_hand",
+      "kind": "style",
+      "title": "Кунг-фу железной руки (Iron Hand Kung Fu)",
+      "aliases": [
+        "кунг-фу железной руки",
+        "железная рука",
+        "iron hand kung fu"
+      ],
+      "setId": "fu",
+      "ruleSections": [
+        {
+          "heading": "Каменный кулак",
+          "text": "Боевой бонус +3. Руки персонажа считаются оружием, дающим дополнительный урон."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.fu.style.monkey",
+      "kind": "style",
+      "title": "Обезьянье кунг-фу (Monkey Kung Fu)",
+      "aliases": [
+        "обезьянье кунг-фу",
+        "стиль обезьяны",
+        "monkey kung fu"
+      ],
+      "setId": "fu",
+      "ruleSections": [
+        {
+          "heading": "Обезьяньи прыжки",
+          "text": "Боевой бонус +2. Успешная смывка на броске 4, 5 или 6 (вместо стандартных 5 и 6)."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.fu.style.phone",
+      "kind": "style",
+      "title": "Телефон-фу (Phone Fu)",
+      "aliases": [
+        "телефон-фу",
+        "телефонное кунг-фу",
+        "phone fu"
+      ],
+      "setId": "fu",
+      "ruleSections": [
+        {
+          "heading": "Звонок другу",
+          "text": "Боевой бонус +1. Если первый позванный на помощь игрок отказался помочь, можно позвать второго."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.fu.style.scorpion",
+      "kind": "style",
+      "title": "Скорпионье кунг-фу (Scorpion Kung Fu)",
+      "aliases": [
+        "скорпионье кунг-фу",
+        "стиль скорпиона",
+        "scorpion kung fu"
+      ],
+      "setId": "fu",
+      "ruleSections": [
+        {
+          "heading": "Ядовитое жало",
+          "text": "Боевой бонус +2. При победе над монстром с разницей в силе 5 и более вы получаете 1 дополнительное сокровище."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.fu.style.toe",
+      "kind": "style",
+      "title": "Палец-фу (Toe Fu)",
+      "aliases": [
+        "палец-фу",
+        "тофу",
+        "toe fu"
+      ],
+      "setId": "fu",
+      "ruleSections": [
+        {
+          "heading": "Удар мизинцем",
+          "text": "Боевой бонус +2. Защищает от непотребств мелких монстров (до 4 уровня включительно)."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.fu.style.turtle",
+      "kind": "style",
+      "title": "Черепашье кунг-фу (Turtle Kung Fu)",
+      "aliases": [
+        "черепашье кунг-фу",
+        "стиль черепахи",
+        "turtle kung fu"
+      ],
+      "setId": "fu",
+      "ruleSections": [
+        {
+          "heading": "Панцирь",
+          "text": "Боевой бонус +3. В случае неудачной смывки позволяет сбросить этот стиль вместо выполнения непотребства."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.fu.style.wire",
+      "kind": "style",
+      "title": "Проволочный стиль (Wire Fu)",
+      "aliases": [
+        "проволочный стиль",
+        "проволочное кунг-фу",
+        "wire fu"
+      ],
+      "setId": "fu",
+      "ruleSections": [
+        {
+          "heading": "Полеты на тросах",
+          "text": "Боевой бонус +3 против гигантских монстров, а также дает +1 на смывку от всех летающих тварей."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.fu.style.drunken",
+      "kind": "style",
+      "title": "Пьяное кунг-фу (Drunken Kung Fu)",
+      "aliases": [
+        "пьяное кунг-фу",
+        "стиль пьяного мастера",
+        "drunken kung fu"
+      ],
+      "setId": "fu",
+      "ruleSections": [
+        {
+          "heading": "Пьяный кураж",
+          "text": "Перед боем брось кубик: результат броска немедленно прибавляется к твоей боевой силе на этот бой."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.super.power.flight",
+      "kind": "power",
+      "title": "Сила: Полёт (Flight)",
+      "aliases": [
+        "полёт",
+        "полет",
+        "flight"
+      ],
+      "setId": "super",
+      "ruleSections": [
+        {
+          "heading": "Ранг 1",
+          "text": "Дает боевой бонус +2 и +1 на смывку от любых монстров."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.super.power.superspeed",
+      "kind": "power",
+      "title": "Сила: Суперскорость (Super-Speed)",
+      "aliases": [
+        "суперскорость",
+        "super-speed"
+      ],
+      "setId": "super",
+      "ruleSections": [
+        {
+          "heading": "Ранг 2",
+          "text": "Дает боевой бонус +3. При смывке гарантирует автоматический успешный побег от 1 монстра."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.super.power.invisibility",
+      "kind": "power",
+      "title": "Сила: Невидимость (Invisibility)",
+      "aliases": [
+        "невидимость",
+        "invisibility"
+      ],
+      "setId": "super",
+      "ruleSections": [
+        {
+          "heading": "Ранг 2",
+          "text": "Дает боевой бонус +2. Защищает от проклятий и карт соперников, сыгранных во время боя."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.super.power.eye_beams",
+      "kind": "power",
+      "title": "Сила: Лучи из глаз (Eye Beams)",
+      "aliases": [
+        "лучи из глаз",
+        "eye beams"
+      ],
+      "setId": "super",
+      "ruleSections": [
+        {
+          "heading": "Ранг 2",
+          "text": "Дает боевой бонус +3 в любом бою."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.super.power.claws",
+      "kind": "power",
+      "title": "Сила: Когти (Claws)",
+      "aliases": [
+        "когти",
+        "claws"
+      ],
+      "setId": "super",
+      "ruleSections": [
+        {
+          "heading": "Ранг 1",
+          "text": "Дает боевой бонус +2. Твои руки считаются свободными даже при использовании этой силы."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.super.power.teleportation",
+      "kind": "power",
+      "title": "Сила: Телепортация (Teleportation)",
+      "aliases": [
+        "телепортация",
+        "teleportation"
+      ],
+      "setId": "super",
+      "ruleSections": [
+        {
+          "heading": "Ранг 3",
+          "text": "Дает боевой бонус +4. Позволяет мгновенно покинуть бой без броска на смывку и без непотребств."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.super.power.hard_stuff",
+      "kind": "power",
+      "title": "Сила: Тело из твёрдого материала (Hard Stuff)",
+      "aliases": [
+        "тело из твёрдого материала",
+        "тело из твердого материала",
+        "hard stuff"
+      ],
+      "setId": "super",
+      "ruleSections": [
+        {
+          "heading": "Ранг 3",
+          "text": "Дает постоянный боевой бонус +5. Считается неснимаемой бронёй."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.booty.ship.sloop",
+      "kind": "ship",
+      "title": "Шлюп (Sloop)",
+      "aliases": [
+        "шлюп",
+        "шлюпка",
+        "sloop"
+      ],
+      "setId": "booty",
+      "ruleSections": [
+        {
+          "heading": "Корабль",
+          "text": "Боевой бонус +2. Не является скакуном — можно иметь и Корабль, и Скакуна. Модификатор корабля заменяет все штрафы к смывке."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.booty.ship.frigate",
+      "kind": "ship",
+      "title": "Фрегат (Frigate)",
+      "aliases": [
+        "фрегат",
+        "frigate"
+      ],
+      "setId": "booty",
+      "ruleSections": [
+        {
+          "heading": "Корабль",
+          "text": "Боевой бонус +3. Дополнительно позволяет нести одну Большую шмотку на борту корабля."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.booty.ship.galleon",
+      "kind": "ship",
+      "title": "Галеон (Galleon)",
+      "aliases": [
+        "галеон",
+        "линейный корабль",
+        "galleon"
+      ],
+      "setId": "booty",
+      "ruleSections": [
+        {
+          "heading": "Флагманский корабль",
+          "text": "Боевой бонус +4. Позволяет нести две Большие шмотки на борту. При смывке успешный побег на 4, 5 или 6."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.star.ship.fighter",
+      "kind": "ship",
+      "title": "Космический истребитель (Star Fighter)",
+      "aliases": [
+        "космический истребитель",
+        "истребитель",
+        "star fighter"
+      ],
+      "setId": "star",
+      "ruleSections": [
+        {
+          "heading": "Космический корабль",
+          "text": "Боевой бонус +2. Дает бонус +1 на смывку от космических монстров."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.star.ship.dreadnought",
+      "kind": "ship",
+      "title": "Звёздный дредноут (Star Dreadnought)",
+      "aliases": [
+        "звёздный дредноут",
+        "звездный дредноут",
+        "dreadnought"
+      ],
+      "setId": "star",
+      "ruleSections": [
+        {
+          "heading": "Тяжёлый флагман",
+          "text": "Боевой бонус +4. Лазерное вооружение дредноута суммируется с личным лазерным оружием персонажа."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.cthulhu.madness.paranoia",
+      "kind": "madness",
+      "title": "Безумие: Паранойя (Paranoia)",
+      "aliases": [
+        "паранойя",
+        "paranoia"
+      ],
+      "setId": "cthulhu",
+      "ruleSections": [
+        {
+          "heading": "Безумие",
+          "text": "Ты никому не доверяешь: тебе запрещено просить других игроков о помощи в бою. Излечивается сбросом Сокровищ."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.cthulhu.madness.kleptomania",
+      "kind": "madness",
+      "title": "Безумие: Клептомания (Kleptomania)",
+      "aliases": [
+        "клептомания",
+        "kleptomania"
+      ],
+      "setId": "cthulhu",
+      "ruleSections": [
+        {
+          "heading": "Безумие",
+          "text": "Ты обязан брать любую шмотку, сброшенную соперниками, но не можешь продавать шмотки за уровни."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.cthulhu.madness.necrophobia",
+      "kind": "madness",
+      "title": "Безумие: Некрофобия (Necrophobia)",
+      "aliases": [
+        "некрофобия",
+        "necrophobia"
+      ],
+      "setId": "cthulhu",
+      "ruleSections": [
+        {
+          "heading": "Безумие",
+          "text": "Панический страх мертвецов: ты получаешь штраф -3 к боевой силе против всех монстров-андедов (Нежити)."
+        }
+      ]
+    },
+    {
+      "id": "spinoff.cthulhu.madness.megalomania",
+      "kind": "madness",
+      "title": "Безумие: Мания величия (Megalomania)",
+      "aliases": [
+        "мания величия",
+        "megalomania"
+      ],
+      "setId": "cthulhu",
+      "ruleSections": [
+        {
+          "heading": "Безумие",
+          "text": "Ты считаешь себя непобедимым: ты обязан вступать в бой с каждым встреченным монстром и не можешь сразу смываться без боя."
+        }
+      ]
     }
   ],
   "ruleBlocks": [
@@ -1572,10 +2003,10 @@
       "setId": "cthulhu",
       "text": "Безумие — отдельная категория негативных карт. Карты безумия вытягиваются в открытую или получаются от непотребств лавкрафтовских монстров. Безумие накладывает постоянные ограничения и штрафы, но некоторые карты безумия дают бонус к боевой силе против монстров из глубин. Снять безумие можно картой «Внезапный приступ здравомыслия» или сбросом уровней.",
       "relatedEntityIds": [
-        "spinoff.cthulhu.cultist",
-        "spinoff.cthulhu.investigator",
-        "spinoff.cthulhu.monster_whacker",
-        "spinoff.cthulhu.professor"
+        "spinoff.cthulhu.madness.paranoia",
+        "spinoff.cthulhu.madness.kleptomania",
+        "spinoff.cthulhu.madness.necrophobia",
+        "spinoff.cthulhu.madness.megalomania"
       ]
     },
     {
@@ -1604,7 +2035,11 @@
       "title": "Пиратский Манчкин: Корабли (Ships)",
       "setId": "booty",
       "text": "Корабль — отдельная категория морского снаряжения. Корабль не является Скакуном, поэтому игрок в смешанной партии может законно иметь и Корабль, и Скакуна! Корабль дает большой постоянный боевой бонус, а при смывке корабельный модификатор заменяет все прочие штрафы к побегу.",
-      "relatedEntityIds": []
+      "relatedEntityIds": [
+        "spinoff.booty.ship.sloop",
+        "spinoff.booty.ship.frigate",
+        "spinoff.booty.ship.galleon"
+      ]
     },
     {
       "id": "spinoff.fu.styles",
@@ -1612,11 +2047,19 @@
       "setId": "fu",
       "text": "Стиль — особая боевая характеристика мастера кунг-фу. По умолчанию игрок может иметь только 1 Стиль. Карта «Дополнительный стиль» позволяет взять второй. Стили модифицируются Усилителями стилей, дающими комбо-бонусы против демонов и монстров-ниндзя.",
       "relatedEntityIds": [
-        "spinoff.fu.styles",
-        "spinoff.fu.ninja",
-        "spinoff.fu.monk",
-        "spinoff.fu.samurai",
-        "spinoff.fu.yakuza"
+        "spinoff.fu.style.banana",
+        "spinoff.fu.style.bull",
+        "spinoff.fu.style.clown",
+        "spinoff.fu.style.feather",
+        "spinoff.fu.style.fox",
+        "spinoff.fu.style.iron_hand",
+        "spinoff.fu.style.monkey",
+        "spinoff.fu.style.phone",
+        "spinoff.fu.style.scorpion",
+        "spinoff.fu.style.toe",
+        "spinoff.fu.style.turtle",
+        "spinoff.fu.style.wire",
+        "spinoff.fu.style.drunken"
       ]
     },
     {
@@ -1625,10 +2068,13 @@
       "setId": "super",
       "text": "Силы — супергеройские способности с рангами от 1 до 3. Игрок может иметь сколько угодно Сил, при условии, что СУММА рангов всех его действующих Сил не превышает его текущий Уровень! При понижении уровня лишние силы сбрасываются. Силы не являются классами или расами и сохраняются при смерти персонажа.",
       "relatedEntityIds": [
-        "spinoff.general.powers",
-        "spinoff.super.brain",
-        "spinoff.super.mystic",
-        "spinoff.super.techno"
+        "spinoff.super.power.flight",
+        "spinoff.super.power.superspeed",
+        "spinoff.super.power.invisibility",
+        "spinoff.super.power.eye_beams",
+        "spinoff.super.power.claws",
+        "spinoff.super.power.teleportation",
+        "spinoff.super.power.hard_stuff"
       ]
     },
     {
@@ -1637,13 +2083,9 @@
       "setId": "star",
       "text": "В космосе действуют особые правила: 1) Оружие на «-азер» (лазер, мазер, фазер) можно соединять вместе в одно гигантское 2-ручное сборное оружие! 2) Напарники (Sidekicks) несут дополнительное снаряжение и спасают от смывки. 3) Космические корабли дают мощную огневую мощь.",
       "relatedEntityIds": [
-        "spinoff.star.bounty_hunter",
-        "spinoff.star.gadgeteer",
-        "spinoff.star.psychic",
-        "spinoff.star.trader",
-        "spinoff.star.cyborg",
-        "spinoff.star.feline",
-        "spinoff.star.mutant_race"
+        "spinoff.star.ship.fighter",
+        "spinoff.star.ship.dreadnought",
+        "spinoff.star.bounty_hunter"
       ]
     },
     {

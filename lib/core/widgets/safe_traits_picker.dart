@@ -64,9 +64,10 @@ class _SafeTraitsPickerSheetState extends State<SafeTraitsPickerSheet> {
   }
 
   List<String> _getAvailableCategories() {
+    const nonTraitKinds = {'dungeon', 'seal', 'disaster'};
     final kinds = widget.allEntities
         .map((e) => e.kind.toLowerCase().trim())
-        .where((k) => k.isNotEmpty)
+        .where((k) => k.isNotEmpty && !nonTraitKinds.contains(k))
         .toSet()
         .toList();
 
@@ -83,10 +84,7 @@ class _SafeTraitsPickerSheetState extends State<SafeTraitsPickerSheet> {
       'steed',
       'ship',
       'hireling',
-      'dungeon',
       'enhancer',
-      'seal',
-      'disaster',
       'madness',
     ];
 
@@ -103,10 +101,12 @@ class _SafeTraitsPickerSheetState extends State<SafeTraitsPickerSheet> {
   }
 
   List<RuleEntity> _getFilteredEntities() {
+    const nonTraitKinds = {'dungeon', 'seal', 'disaster'};
     final query = _searchCtrl.text.trim().toLowerCase();
 
     return widget.allEntities.where((e) {
       final kind = e.kind.toLowerCase().trim();
+      if (nonTraitKinds.contains(kind)) return false;
 
       // Category filter
       if (_selectedCategory != 'all' && kind != _selectedCategory) {

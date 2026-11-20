@@ -64,9 +64,10 @@ class _TraitsPickerSheetState extends State<TraitsPickerSheet> {
   }
 
   List<String> _getAvailableCategories() {
+    const nonTraitKinds = {'dungeon', 'seal', 'disaster'};
     final kinds = widget.allEntities
         .map((e) => e.kind.toLowerCase().trim())
-        .where((k) => k.isNotEmpty)
+        .where((k) => k.isNotEmpty && !nonTraitKinds.contains(k))
         .toSet()
         .toList();
 
@@ -82,10 +83,7 @@ class _TraitsPickerSheetState extends State<TraitsPickerSheet> {
       'steed',
       'ship',
       'hireling',
-      'dungeon',
       'enhancer',
-      'seal',
-      'disaster',
       'madness',
     ];
 
@@ -102,10 +100,12 @@ class _TraitsPickerSheetState extends State<TraitsPickerSheet> {
   }
 
   List<RuleEntity> _getFilteredEntities() {
+    const nonTraitKinds = {'dungeon', 'seal', 'disaster'};
     final query = _searchCtrl.text.trim().toLowerCase();
 
     return widget.allEntities.where((e) {
       final kind = e.kind.toLowerCase().trim();
+      if (nonTraitKinds.contains(kind)) return false;
 
       // Category filter
       if (_selectedCategory != 'all' && kind != _selectedCategory) {

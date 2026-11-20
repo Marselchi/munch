@@ -126,6 +126,11 @@ class GlossaryService {
     int current = 0;
 
     for (final span in staticSpans) {
+      // Validate boundaries against text length
+      if (span.start < current || span.end > rawText.length || span.start >= span.end) {
+        return _dynamicParseText(rawText);
+      }
+
       if (span.start > current) {
         result.add(TextSpanItem.text(rawText.substring(current, span.start)));
       }

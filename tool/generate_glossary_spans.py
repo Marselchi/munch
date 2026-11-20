@@ -285,7 +285,15 @@ def parse_text_to_spans(text):
 
     # Sort spans by start
     matches.sort(key=lambda x: x[0])
-    return matches
+
+    # Convert to UTF-16 code unit offsets for Dart
+    u16_matches = []
+    for start, end, term_id in matches:
+        start_u16 = len(text[:start].encode('utf-16-le')) // 2
+        end_u16 = len(text[:end].encode('utf-16-le')) // 2
+        u16_matches.append((start_u16, end_u16, term_id))
+
+    return u16_matches
 
 def main():
     packs = [

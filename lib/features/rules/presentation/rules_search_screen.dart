@@ -398,10 +398,10 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
     int otherCoreCount,
   ) {
     final subFilters = [
-      ('all', 'Все дополнения'),
-      ('setup', '⚡ Старт и механики'),
-      ('classic', '🏰 Манчкин 2–10'),
-      ('spinoffs', '🎲 Спин-оффы'),
+      ('all', 'Все дополнения', Icons.menu_book),
+      ('setup', 'Старт и механики', Icons.bolt),
+      ('classic', 'Манчкин 2–10', Icons.castle),
+      ('spinoffs', 'Спин-оффы', Icons.casino),
     ];
 
     final visibleCount = math.min(_expansionLimit, blocks.length);
@@ -419,6 +419,11 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
               return Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: FilterChip(
+                  avatar: Icon(
+                    f.$3,
+                    size: 15,
+                    color: isSelected ? Colors.black : AppColors.primaryGold,
+                  ),
                   label: Text(
                     f.$2,
                     style: TextStyle(
@@ -558,13 +563,20 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
                                         borderRadius: BorderRadius.circular(6),
                                         border: Border.all(color: AppColors.secondaryAmber.withOpacity(0.5)),
                                       ),
-                                      child: const Text(
-                                        '⚡ СТАРТ И МЕХАНИКА',
-                                        style: TextStyle(
-                                          fontSize: 9.5,
-                                          fontWeight: FontWeight.bold,
-                                          color: AppColors.secondaryAmber,
-                                        ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.bolt, size: 11, color: AppColors.secondaryAmber),
+                                          SizedBox(width: 3),
+                                          Text(
+                                            'СТАРТ И МЕХАНИКА',
+                                            style: TextStyle(
+                                              fontSize: 9.5,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppColors.secondaryAmber,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],
@@ -615,17 +627,19 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
     int otherCoreCount,
   ) {
     final catFilters = [
-      ('all', 'Все'),
-      ('class', 'Классы'),
-      ('race', 'Расы'),
-      ('faction', 'Фракции (Pathfinder)'),
-      ('mojo', 'Моджо'),
-      ('power', 'Силы'),
-      ('style', 'Стили'),
-      ('accent', 'Акценты'),
-      ('steed', 'Скакуны'),
-      ('hireling', 'Наёмники'),
-      ('madness', 'Безумие'),
+      ('all', 'Все', Icons.apps),
+      ('class', 'Классы', Icons.shield),
+      ('race', 'Расы', Icons.groups),
+      ('faction', 'Фракции (Pathfinder)', Icons.flag),
+      ('mojo', 'Моджо', Icons.science),
+      ('power', 'Силы', Icons.flash_on),
+      ('style', 'Стили', Icons.sports_martial_arts),
+      ('accent', 'Акценты', Icons.record_voice_over),
+      ('steed', 'Скакуны', Icons.pets),
+      ('ship', 'Корабли', Icons.directions_boat),
+      ('hireling', 'Наёмники', Icons.person_add),
+      ('enhancer', 'Усилители', Icons.auto_awesome),
+      ('madness', 'Безумие', Icons.psychology),
     ];
 
     final visibleCount = math.min(_entityLimit, entities.length);
@@ -643,6 +657,11 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
               return Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: FilterChip(
+                  avatar: Icon(
+                    f.$3,
+                    size: 15,
+                    color: isSelected ? Colors.black : AppColors.primaryGold,
+                  ),
                   label: Text(
                     f.$2,
                     style: TextStyle(

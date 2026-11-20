@@ -74,13 +74,11 @@ class _InteractiveRuleTextState extends ConsumerState<InteractiveRuleText> {
           TextSpan(
             text: item.text,
             style: defaultStyle.copyWith(
-              color: const Color(0xFFFFD54F),
-              fontWeight: FontWeight.bold,
-              backgroundColor: const Color(0x33FFB300),
+              color: AppColors.primaryGold,
+              fontWeight: FontWeight.w600,
               decoration: TextDecoration.underline,
-              decorationColor: const Color(0xFFFFB300),
-              decorationThickness: 1.8,
-              decorationStyle: TextDecorationStyle.solid,
+              decorationColor: AppColors.primaryGold.withOpacity(0.5),
+              decorationThickness: 1.2,
             ),
             recognizer: recognizer,
           ),
