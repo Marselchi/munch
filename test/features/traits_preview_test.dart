@@ -76,7 +76,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('TraitsPickerSheet excludes non-trait categories like dungeon/seal', (tester) async {
+  testWidgets('TraitsPickerSheet strictly includes traits and excludes steeds/dungeons/hirelings', (tester) async {
     final entities = [
       const RuleEntity(
         id: 'core.class.warrior',
@@ -87,9 +87,33 @@ void main() {
         ruleSections: [],
       ),
       const RuleEntity(
+        id: 'core.race.elf',
+        kind: 'race',
+        title: 'Эльф',
+        aliases: [],
+        setId: 'core',
+        ruleSections: [],
+      ),
+      const RuleEntity(
+        id: 'exp8.enhancer.elder',
+        kind: 'enhancer',
+        title: 'Старший',
+        aliases: [],
+        setId: 'exp8',
+        ruleSections: [],
+      ),
+      const RuleEntity(
         id: 'exp4.steed.chicken',
         kind: 'steed',
         title: 'Цыплёнок',
+        aliases: [],
+        setId: 'exp4',
+        ruleSections: [],
+      ),
+      const RuleEntity(
+        id: 'exp4.hireling.elf',
+        kind: 'hireling',
+        title: 'Эльф-наёмничек',
         aliases: [],
         setId: 'exp4',
         ruleSections: [],
@@ -119,11 +143,14 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    // Should contain Warrior and Chicken
+    // Should contain character traits (Class: Воин, Race: Эльф, Enhancer: Старший)
     expect(find.text('Воин'), findsOneWidget);
-    expect(find.text('Цыплёнок'), findsOneWidget);
+    expect(find.text('Эльф'), findsOneWidget);
+    expect(find.text('Старший'), findsOneWidget);
 
-    // Should NOT contain Dungeon
+    // Should NOT contain Steeds, Hirelings, or Dungeons
+    expect(find.text('Цыплёнок'), findsNothing);
+    expect(find.text('Эльф-наёмничек'), findsNothing);
     expect(find.text('Подземелье Ужаса'), findsNothing);
   });
 }

@@ -630,16 +630,12 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
       ('all', 'Все', Icons.apps),
       ('class', 'Классы', Icons.shield),
       ('race', 'Расы', Icons.groups),
+      ('enhancer', 'Усилители рас', Icons.auto_awesome),
       ('faction', 'Фракции (Pathfinder)', Icons.flag),
       ('mojo', 'Моджо', Icons.science),
       ('power', 'Силы', Icons.flash_on),
       ('style', 'Стили', Icons.sports_martial_arts),
       ('accent', 'Акценты', Icons.record_voice_over),
-      ('steed', 'Скакуны', Icons.pets),
-      ('ship', 'Корабли', Icons.directions_boat),
-      ('hireling', 'Наёмники', Icons.person_add),
-      ('enhancer', 'Усилители', Icons.auto_awesome),
-      ('madness', 'Безумие', Icons.psychology),
     ];
 
     final visibleCount = math.min(_entityLimit, entities.length);

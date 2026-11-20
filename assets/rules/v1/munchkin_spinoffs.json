@@ -1801,154 +1801,6 @@
           "text": "Дает постоянный боевой бонус +5. Считается неснимаемой бронёй."
         }
       ]
-    },
-    {
-      "id": "spinoff.booty.ship.sloop",
-      "kind": "ship",
-      "title": "Шлюп (Sloop)",
-      "aliases": [
-        "шлюп",
-        "шлюпка",
-        "sloop"
-      ],
-      "setId": "booty",
-      "ruleSections": [
-        {
-          "heading": "Корабль",
-          "text": "Боевой бонус +2. Не является скакуном — можно иметь и Корабль, и Скакуна. Модификатор корабля заменяет все штрафы к смывке."
-        }
-      ]
-    },
-    {
-      "id": "spinoff.booty.ship.frigate",
-      "kind": "ship",
-      "title": "Фрегат (Frigate)",
-      "aliases": [
-        "фрегат",
-        "frigate"
-      ],
-      "setId": "booty",
-      "ruleSections": [
-        {
-          "heading": "Корабль",
-          "text": "Боевой бонус +3. Дополнительно позволяет нести одну Большую шмотку на борту корабля."
-        }
-      ]
-    },
-    {
-      "id": "spinoff.booty.ship.galleon",
-      "kind": "ship",
-      "title": "Галеон (Galleon)",
-      "aliases": [
-        "галеон",
-        "линейный корабль",
-        "galleon"
-      ],
-      "setId": "booty",
-      "ruleSections": [
-        {
-          "heading": "Флагманский корабль",
-          "text": "Боевой бонус +4. Позволяет нести две Большие шмотки на борту. При смывке успешный побег на 4, 5 или 6."
-        }
-      ]
-    },
-    {
-      "id": "spinoff.star.ship.fighter",
-      "kind": "ship",
-      "title": "Космический истребитель (Star Fighter)",
-      "aliases": [
-        "космический истребитель",
-        "истребитель",
-        "star fighter"
-      ],
-      "setId": "star",
-      "ruleSections": [
-        {
-          "heading": "Космический корабль",
-          "text": "Боевой бонус +2. Дает бонус +1 на смывку от космических монстров."
-        }
-      ]
-    },
-    {
-      "id": "spinoff.star.ship.dreadnought",
-      "kind": "ship",
-      "title": "Звёздный дредноут (Star Dreadnought)",
-      "aliases": [
-        "звёздный дредноут",
-        "звездный дредноут",
-        "dreadnought"
-      ],
-      "setId": "star",
-      "ruleSections": [
-        {
-          "heading": "Тяжёлый флагман",
-          "text": "Боевой бонус +4. Лазерное вооружение дредноута суммируется с личным лазерным оружием персонажа."
-        }
-      ]
-    },
-    {
-      "id": "spinoff.cthulhu.madness.paranoia",
-      "kind": "madness",
-      "title": "Безумие: Паранойя (Paranoia)",
-      "aliases": [
-        "паранойя",
-        "paranoia"
-      ],
-      "setId": "cthulhu",
-      "ruleSections": [
-        {
-          "heading": "Безумие",
-          "text": "Ты никому не доверяешь: тебе запрещено просить других игроков о помощи в бою. Излечивается сбросом Сокровищ."
-        }
-      ]
-    },
-    {
-      "id": "spinoff.cthulhu.madness.kleptomania",
-      "kind": "madness",
-      "title": "Безумие: Клептомания (Kleptomania)",
-      "aliases": [
-        "клептомания",
-        "kleptomania"
-      ],
-      "setId": "cthulhu",
-      "ruleSections": [
-        {
-          "heading": "Безумие",
-          "text": "Ты обязан брать любую шмотку, сброшенную соперниками, но не можешь продавать шмотки за уровни."
-        }
-      ]
-    },
-    {
-      "id": "spinoff.cthulhu.madness.necrophobia",
-      "kind": "madness",
-      "title": "Безумие: Некрофобия (Necrophobia)",
-      "aliases": [
-        "некрофобия",
-        "necrophobia"
-      ],
-      "setId": "cthulhu",
-      "ruleSections": [
-        {
-          "heading": "Безумие",
-          "text": "Панический страх мертвецов: ты получаешь штраф -3 к боевой силе против всех монстров-андедов (Нежити)."
-        }
-      ]
-    },
-    {
-      "id": "spinoff.cthulhu.madness.megalomania",
-      "kind": "madness",
-      "title": "Безумие: Мания величия (Megalomania)",
-      "aliases": [
-        "мания величия",
-        "megalomania"
-      ],
-      "setId": "cthulhu",
-      "ruleSections": [
-        {
-          "heading": "Безумие",
-          "text": "Ты считаешь себя непобедимым: ты обязан вступать в бой с каждым встреченным монстром и не можешь сразу смываться без боя."
-        }
-      ]
     }
   ],
   "ruleBlocks": [
@@ -2003,10 +1855,7 @@
       "setId": "cthulhu",
       "text": "Безумие — отдельная категория негативных карт. Карты безумия вытягиваются в открытую или получаются от непотребств лавкрафтовских монстров. Безумие накладывает постоянные ограничения и штрафы, но некоторые карты безумия дают бонус к боевой силе против монстров из глубин. Снять безумие можно картой «Внезапный приступ здравомыслия» или сбросом уровней.",
       "relatedEntityIds": [
-        "spinoff.cthulhu.madness.paranoia",
-        "spinoff.cthulhu.madness.kleptomania",
-        "spinoff.cthulhu.madness.necrophobia",
-        "spinoff.cthulhu.madness.megalomania"
+        "spinoff.cthulhu.cultist"
       ]
     },
     {
@@ -2036,9 +1885,7 @@
       "setId": "booty",
       "text": "Корабль — отдельная категория морского снаряжения. Корабль не является Скакуном, поэтому игрок в смешанной партии может законно иметь и Корабль, и Скакуна! Корабль дает большой постоянный боевой бонус, а при смывке корабельный модификатор заменяет все прочие штрафы к побегу.",
       "relatedEntityIds": [
-        "spinoff.booty.ship.sloop",
-        "spinoff.booty.ship.frigate",
-        "spinoff.booty.ship.galleon"
+        "spinoff.booty.pirate"
       ]
     },
     {
@@ -2083,8 +1930,6 @@
       "setId": "star",
       "text": "В космосе действуют особые правила: 1) Оружие на «-азер» (лазер, мазер, фазер) можно соединять вместе в одно гигантское 2-ручное сборное оружие! 2) Напарники (Sidekicks) несут дополнительное снаряжение и спасают от смывки. 3) Космические корабли дают мощную огневую мощь.",
       "relatedEntityIds": [
-        "spinoff.star.ship.fighter",
-        "spinoff.star.ship.dreadnought",
         "spinoff.star.bounty_hunter"
       ]
     },

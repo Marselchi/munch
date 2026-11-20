@@ -63,28 +63,35 @@ class _TraitsPickerSheetState extends State<TraitsPickerSheet> {
     super.dispose();
   }
 
+  static const Set<String> _allowedTraitKinds = {
+    'class',
+    'race',
+    'enhancer',
+    'faction',
+    'mojo',
+    'power',
+    'style',
+    'accent',
+    'training',
+  };
+
   List<String> _getAvailableCategories() {
-    const nonTraitKinds = {'dungeon', 'seal', 'disaster'};
     final kinds = widget.allEntities
         .map((e) => e.kind.toLowerCase().trim())
-        .where((k) => k.isNotEmpty && !nonTraitKinds.contains(k))
+        .where((k) => _allowedTraitKinds.contains(k))
         .toSet()
         .toList();
 
     const priority = [
       'class',
       'race',
+      'enhancer',
       'faction',
       'mojo',
       'power',
       'style',
       'training',
       'accent',
-      'steed',
-      'ship',
-      'hireling',
-      'enhancer',
-      'madness',
     ];
 
     kinds.sort((a, b) {
@@ -100,12 +107,11 @@ class _TraitsPickerSheetState extends State<TraitsPickerSheet> {
   }
 
   List<RuleEntity> _getFilteredEntities() {
-    const nonTraitKinds = {'dungeon', 'seal', 'disaster'};
     final query = _searchCtrl.text.trim().toLowerCase();
 
     return widget.allEntities.where((e) {
       final kind = e.kind.toLowerCase().trim();
-      if (nonTraitKinds.contains(kind)) return false;
+      if (!_allowedTraitKinds.contains(kind)) return false;
 
       // Category filter
       if (_selectedCategory != 'all' && kind != _selectedCategory) {
@@ -124,9 +130,40 @@ class _TraitsPickerSheetState extends State<TraitsPickerSheet> {
   }
 
   String _getKindTitle(String kind) {
-    if (kind == 'all') return 'Все';
-    final cat = RuleCategoryType.fromKind(kind);
-    return cat.title;
+    switch (kind.toLowerCase().trim()) {
+      case 'all':
+        return 'Все';
+      case 'class':
+        return 'Классы';
+      case 'race':
+        return 'Расы';
+      case 'enhancer':
+        return 'Усилители рас';
+      case 'faction':
+        return 'Фракции';
+      case 'mojo':
+        return 'Моджо';
+      case 'power':
+        return 'Силы';
+      case 'style':
+        return 'Стили';
+      case 'accent':
+        return 'Акценты';
+      case 'training':
+        return 'Подготовка';
+      case 'steed':
+        return 'Скакуны';
+      case 'ship':
+        return 'Корабли';
+      case 'hireling':
+        return 'Наёмники';
+      case 'enhancer':
+        return 'Усилители';
+      case 'madness':
+        return 'Безумие';
+      default:
+        return RuleCategoryType.fromKind(kind).title;
+    }
   }
 
   @override
