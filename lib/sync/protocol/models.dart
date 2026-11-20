@@ -288,7 +288,7 @@ class Player {
 class SessionSettings {
   final int maxLevel;
 
-  const SessionSettings({this.maxLevel = 20});
+  const SessionSettings({this.maxLevel = 22});
 
   SessionSettings copyWith({int? maxLevel}) {
     return SessionSettings(maxLevel: maxLevel ?? this.maxLevel);
@@ -298,7 +298,7 @@ class SessionSettings {
 
   factory SessionSettings.fromJson(Map<String, dynamic> json) {
     return SessionSettings(
-      maxLevel: json['maxLevel'] as int? ?? 20,
+      maxLevel: json['maxLevel'] as int? ?? 22,
     );
   }
 

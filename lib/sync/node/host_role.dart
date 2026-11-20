@@ -248,7 +248,7 @@ class HostRole {
 
   void updateMaxLevel(int newMaxLevel) {
     final clamped = newMaxLevel.clamp(
-      AppConstants.defaultMaxLevel,
+      AppConstants.minLevel,
       AppConstants.absoluteMaxLevel,
     );
     if (clamped == node.settings.maxLevel) return;

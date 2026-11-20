@@ -258,16 +258,49 @@ class _SafeTraitsPickerSheetState extends State<SafeTraitsPickerSheet> {
                       itemBuilder: (ctx, i) {
                         final entity = filtered[i];
                         final isSelected = _selected.contains(entity.title);
+                        final hasEpic = entity.epic != null && entity.epic!.ruleSections.isNotEmpty;
 
                         return CheckboxListTile(
                           contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          title: Text(
-                            entity.title,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                              color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
-                            ),
+                          title: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  entity.title,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                    color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
+                                  ),
+                                ),
+                              ),
+                              if (hasEpic) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.epicPurple.withOpacity(0.18),
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(color: AppColors.epicPurple.withOpacity(0.5)),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.auto_awesome, size: 10, color: AppColors.epicPurple),
+                                      SizedBox(width: 3),
+                                      Text(
+                                        'ЭПИК',
+                                        style: TextStyle(
+                                          fontSize: 9.5,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.epicPurple,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                           subtitle: Text(
                             '${_getKindTitle(entity.kind)} • Набор: ${entity.setId}',

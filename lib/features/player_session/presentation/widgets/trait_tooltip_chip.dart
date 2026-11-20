@@ -73,21 +73,51 @@ class TraitTooltipChip extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryGold.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: AppColors.primaryGold.withOpacity(0.4)),
-                          ),
-                          child: Text(
-                            categoryTitle,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primaryGold,
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryGold.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: AppColors.primaryGold.withOpacity(0.4)),
+                              ),
+                              child: Text(
+                                categoryTitle,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primaryGold,
+                                ),
+                              ),
                             ),
-                          ),
+                            if (foundEntity?.epic != null && foundEntity!.epic!.ruleSections.isNotEmpty) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: AppColors.epicPurple.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: AppColors.epicPurple.withOpacity(0.5)),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.auto_awesome, size: 11, color: AppColors.epicPurple),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'ЭПИК',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.epicPurple,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                         const SizedBox(height: 6),
                         Text(
@@ -110,7 +140,7 @@ class TraitTooltipChip extends ConsumerWidget {
               const SizedBox(height: 12),
               if (foundEntity != null && foundEntity.ruleSections.isNotEmpty) ...[
                 Container(
-                  constraints: const BoxConstraints(maxHeight: 200),
+                  constraints: const BoxConstraints(maxHeight: 180),
                   child: SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,6 +188,69 @@ class TraitTooltipChip extends ConsumerWidget {
                   ),
                 ),
               ],
+              if (foundEntity != null &&
+                  foundEntity.epic != null &&
+                  foundEntity.epic!.ruleSections.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Container(
+                  constraints: const BoxConstraints(maxHeight: 160),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.epicCardBg,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppColors.epicPurple.withOpacity(0.55), width: 1.2),
+                  ),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.auto_awesome, size: 15, color: AppColors.epicPurple),
+                            SizedBox(width: 6),
+                            Text(
+                              'Эпические правила (Ур. 10–22)',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.epicPurple,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        ...foundEntity.epic!.ruleSections.map((sec) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (sec.heading != null && sec.heading!.isNotEmpty)
+                                  Text(
+                                    sec.heading!,
+                                    style: const TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                Text(
+                                  sec.text,
+                                  style: const TextStyle(
+                                    fontSize: 12.5,
+                                    color: AppColors.textSecondary,
+                                    height: 1.35,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -197,14 +290,29 @@ class TraitTooltipChip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final allEntities = ref.watch(allRuleEntitiesProvider);
+    final norm = traitName.trim().toLowerCase();
+    final hasEpic = allEntities.any((e) =>
+        (e.title.toLowerCase() == norm ||
+            e.title.toLowerCase().startsWith(norm) ||
+            e.aliases.any((a) => a.toLowerCase() == norm)) &&
+        e.epic != null &&
+        e.epic!.ruleSections.isNotEmpty);
+
     return ActionChip(
-      avatar: const Icon(Icons.info_outline, size: 13, color: AppColors.primaryGold),
+      avatar: Icon(
+        hasEpic ? Icons.auto_awesome : Icons.info_outline,
+        size: 13,
+        color: hasEpic ? AppColors.epicPurple : AppColors.primaryGold,
+      ),
       label: Text(
         traitName,
         style: const TextStyle(fontSize: 12, color: AppColors.textPrimary),
       ),
-      backgroundColor: AppColors.darkSurface,
-      side: const BorderSide(color: AppColors.darkCardBorder),
+      backgroundColor: hasEpic ? AppColors.epicCardBg : AppColors.darkSurface,
+      side: BorderSide(
+        color: hasEpic ? AppColors.epicPurple.withOpacity(0.5) : AppColors.darkCardBorder,
+      ),
       onPressed: () => _showTraitModal(context, ref),
     );
   }

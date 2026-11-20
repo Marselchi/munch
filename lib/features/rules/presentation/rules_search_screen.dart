@@ -26,11 +26,32 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
   final Debouncer _debouncer = Debouncer(duration: AppConstants.searchDebounce);
   late final TabController _tabController;
 
+  final ScrollController _expansionScrollController = ScrollController();
+  final ScrollController _entityScrollController = ScrollController();
+  final ScrollController _coreScrollController = ScrollController();
+
+  static const int _initialPageLimit = 15;
+  static const int _pageIncrement = 15;
+
+  int _expansionLimit = _initialPageLimit;
+  int _entityLimit = _initialPageLimit;
+
   // Sub-filter for Expansion rules tab
   String _expansionFilter = 'all';
 
   // Sub-filter for Entities tab
   String _entityCategoryFilter = 'all';
+
+  static const Set<String> _setupBlockIds = {
+    'guide.must_read.all_expansions',
+    'exp6.dungeons.activation_guide',
+    'spinoff.apocalypse.activation_guide',
+    'exp4.steeds_hirelings.activation_guide',
+    'exp7.blenders.mixing_guide',
+    'spinoff.cthulhu.cultism_guide',
+    'core.rules.setup',
+    'core.rules.epic',
+  };
 
   @override
   void initState() {
@@ -39,6 +60,8 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
     _tabController.addListener(() {
       if (mounted) setState(() {});
     });
+    _expansionScrollController.addListener(_onExpansionScroll);
+    _entityScrollController.addListener(_onEntityScroll);
     _searchController.text = '';
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -49,14 +72,45 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
 
   @override
   void dispose() {
+    _expansionScrollController.removeListener(_onExpansionScroll);
+    _entityScrollController.removeListener(_onEntityScroll);
+    _expansionScrollController.dispose();
+    _entityScrollController.dispose();
+    _coreScrollController.dispose();
     _tabController.dispose();
     _searchController.dispose();
     _debouncer.dispose();
     super.dispose();
   }
 
+  void _onExpansionScroll() {
+    if (!_expansionScrollController.hasClients) return;
+    if (_expansionScrollController.position.maxScrollExtent -
+            _expansionScrollController.position.pixels <=
+        300) {
+      setState(() {
+        _expansionLimit += _pageIncrement;
+      });
+    }
+  }
+
+  void _onEntityScroll() {
+    if (!_entityScrollController.hasClients) return;
+    if (_entityScrollController.position.maxScrollExtent -
+            _entityScrollController.position.pixels <=
+        300) {
+      setState(() {
+        _entityLimit += _pageIncrement;
+      });
+    }
+  }
+
   void _onSearchChanged(String query) {
     _debouncer.run(() {
+      setState(() {
+        _expansionLimit = _initialPageLimit;
+        _entityLimit = _initialPageLimit;
+      });
       ref.read(rulesProvider.notifier).search(query);
       if (mounted) setState(() {});
     });
@@ -111,16 +165,7 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
   }
 
   bool _isSetupOrActivationBlock(RuleBlock block) {
-    final id = block.id.toLowerCase();
-    return id.contains('activation') ||
-        id.contains('guide') ||
-        id.contains('mixing') ||
-        id.contains('dungeons') ||
-        id.contains('seals') ||
-        id.contains('steeds') ||
-        id.contains('hirelings') ||
-        id.contains('cultist') ||
-        id.contains('portals');
+    return _setupBlockIds.contains(block.id);
   }
 
   bool _isCoreBlock(RuleBlock block) {
@@ -137,15 +182,14 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
     final expBlocks = allBlocks.where(_isExpansionBlock).toList();
     final q = query.trim().toLowerCase();
 
-    return expBlocks.where((b) {
+    final result = expBlocks.where((b) {
       // 1. Sub-filter
       if (_expansionFilter == 'setup') {
         if (!_isSetupOrActivationBlock(b)) return false;
-      } else if (_expansionFilter == 'pathfinder') {
-        if (b.setId != 'pathfinder') return false;
       } else if (_expansionFilter == 'classic') {
         if (!b.setId.startsWith('exp')) return false;
       } else if (_expansionFilter == 'spinoffs') {
+        // Pathfinder, Apocalypse, Cthulhu, Zombies, Booty, Star, Super, Good/Bad, Bites, Fu
         if (b.setId.startsWith('exp') || b.setId == 'core' || b.setId == 'm2e') return false;
       }
 
@@ -156,6 +200,15 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
       if (getSetBadge(b.setId).toLowerCase().contains(q)) return true;
       return false;
     }).toList();
+
+    // Pin «Желательно прочитать» at the very top
+    result.sort((a, b) {
+      if (a.id == 'guide.must_read.all_expansions') return -1;
+      if (b.id == 'guide.must_read.all_expansions') return 1;
+      return 0;
+    });
+
+    return result;
   }
 
   List<RuleEntity> _filterEntities(List<RuleEntity> allEntities, String query) {
@@ -238,7 +291,7 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
       ),
       body: Column(
         children: [
-          // Elegant Search Bar
+          // Search Input Bar
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: TextField(
@@ -346,11 +399,13 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
   ) {
     final subFilters = [
       ('all', 'Все дополнения'),
-      ('setup', '⚡ Старт и активация'),
-      ('pathfinder', '🛡️ Pathfinder'),
+      ('setup', '⚡ Старт и механики'),
       ('classic', '🏰 Манчкин 2–10'),
       ('spinoffs', '🎲 Спин-оффы'),
     ];
+
+    final visibleCount = math.min(_expansionLimit, blocks.length);
+    final hasMore = visibleCount < blocks.length;
 
     return Column(
       children: [
@@ -379,7 +434,10 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
                     color: isSelected ? AppColors.primaryGold : AppColors.darkCardBorder,
                   ),
                   onSelected: (val) {
-                    setState(() => _expansionFilter = f.$1);
+                    setState(() {
+                      _expansionFilter = f.$1;
+                      _expansionLimit = _initialPageLimit;
+                    });
                   },
                 ),
               );
@@ -387,7 +445,7 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
           ),
         ),
 
-        // List or empty state
+        // List with pagination or empty state
         Expanded(
           child: blocks.isEmpty
               ? _buildCrossTabEmptyState(
@@ -399,22 +457,46 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
                       : (otherCoreCount > 0 ? '«Базовые правила» ($otherCoreCount)' : null),
                 )
               : ListView.builder(
+                  controller: _expansionScrollController,
                   padding: const EdgeInsets.fromLTRB(16, 2, 16, 16),
-                  itemCount: blocks.length,
+                  itemCount: visibleCount + (hasMore ? 1 : 0),
                   itemBuilder: (context, index) {
+                    if (index == visibleCount) {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Center(
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                      );
+                    }
+
                     final block = blocks[index];
                     final setBadge = getSetBadge(block.setId);
                     final setColor = getSetColor(block.setId);
                     final isSetup = _isSetupOrActivationBlock(block);
+                    final isMustRead = block.id == 'guide.must_read.all_expansions';
 
                     return Card(
                       margin: const EdgeInsets.only(bottom: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        side: BorderSide(
+                          color: isMustRead
+                              ? AppColors.primaryGold
+                              : AppColors.darkCardBorder,
+                          width: isMustRead ? 1.6 : 1,
+                        ),
+                      ),
                       child: InkWell(
                         onTap: () {
                           _openRuleArticle(
                             title: block.title,
                             content: block.text,
-                            badge: setBadge,
+                            badge: isMustRead ? 'Ключевое руководство' : setBadge,
                           );
                         },
                         borderRadius: BorderRadius.circular(14),
@@ -425,23 +507,49 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
                             children: [
                               Row(
                                 children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: setColor.withOpacity(0.18),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: setColor.withOpacity(0.45)),
-                                    ),
-                                    child: Text(
-                                      setBadge,
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: setColor,
+                                  if (isMustRead) ...[
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primaryGold.withOpacity(0.2),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: AppColors.primaryGold),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.star, size: 12, color: AppColors.primaryGold),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            'ГЛАВНОЕ РУКОВОДСТВО',
+                                            style: TextStyle(
+                                              fontSize: 10.5,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppColors.primaryGold,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ),
-                                  if (isSetup) ...[
+                                  ] else ...[
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: setColor.withOpacity(0.18),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: setColor.withOpacity(0.45)),
+                                      ),
+                                      child: Text(
+                                        setBadge,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: setColor,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                  if (isSetup && !isMustRead) ...[
                                     const SizedBox(width: 8),
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
@@ -471,10 +579,10 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
                               const SizedBox(height: 8),
                               Text(
                                 block.title,
-                                style: const TextStyle(
-                                  fontSize: 15.5,
+                                style: TextStyle(
+                                  fontSize: isMustRead ? 16.5 : 15.5,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.textPrimary,
+                                  color: isMustRead ? AppColors.primaryGold : AppColors.textPrimary,
                                 ),
                               ),
                               const SizedBox(height: 6),
@@ -520,6 +628,9 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
       ('madness', 'Безумие'),
     ];
 
+    final visibleCount = math.min(_entityLimit, entities.length);
+    final hasMore = visibleCount < entities.length;
+
     return Column(
       children: [
         // Category chips row
@@ -547,7 +658,10 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
                     color: isSelected ? AppColors.primaryGold : AppColors.darkCardBorder,
                   ),
                   onSelected: (val) {
-                    setState(() => _entityCategoryFilter = f.$1);
+                    setState(() {
+                      _entityCategoryFilter = f.$1;
+                      _entityLimit = _initialPageLimit;
+                    });
                   },
                 ),
               );
@@ -555,7 +669,7 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
           ),
         ),
 
-        // List or empty state
+        // Virtualized List with on-scroll pagination
         Expanded(
           child: entities.isEmpty
               ? _buildCrossTabEmptyState(
@@ -567,9 +681,23 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
                       : (otherCoreCount > 0 ? '«Базовые правила» ($otherCoreCount)' : null),
                 )
               : ListView.builder(
+                  controller: _entityScrollController,
                   padding: const EdgeInsets.fromLTRB(16, 2, 16, 16),
-                  itemCount: entities.length,
+                  itemCount: visibleCount + (hasMore ? 1 : 0),
                   itemBuilder: (context, index) {
+                    if (index == visibleCount) {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Center(
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                      );
+                    }
+
                     final entity = entities[index];
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 8),
@@ -604,6 +732,7 @@ class _RulesSearchScreenState extends ConsumerState<RulesSearchScreen>
                       : (otherEntCount > 0 ? '«Классы и расы» ($otherEntCount)' : null),
                 )
               : ListView.builder(
+                  controller: _coreScrollController,
                   padding: const EdgeInsets.all(16),
                   itemCount: blocks.length,
                   itemBuilder: (context, index) {

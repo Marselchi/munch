@@ -7,7 +7,7 @@ abstract final class AppConstants {
 
   // Level limits
   static const int minLevel = 1;
-  static const int defaultMaxLevel = 20;
+  static const int defaultMaxLevel = 22;
   static const int absoluteMaxLevel = 22;
 
   // Gear limits
