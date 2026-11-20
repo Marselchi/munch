@@ -253,25 +253,30 @@ class _SafeTraitsPickerSheetState extends State<SafeTraitsPickerSheet> {
             ),
             const SizedBox(height: 8),
 
-            // Selected traits preview chips
+            // Selected traits preview chips (scrollable horizontally so it never shifts the list)
             if (_selected.isNotEmpty) ...[
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                children: _selected.map((t) {
-                  return Chip(
-                    label: Text(t, style: const TextStyle(fontSize: 12)),
-                    backgroundColor: const Color(0xFF2C3038),
-                    deleteIcon: const Icon(Icons.close, size: 14),
-                    onDeleted: () {
-                      setState(() {
-                        _selected.remove(t);
-                      });
-                    },
-                    padding: EdgeInsets.zero,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  );
-                }).toList(),
+              SizedBox(
+                height: 38,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _selected.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 6),
+                  itemBuilder: (context, idx) {
+                    final t = _selected.elementAt(idx);
+                    return Chip(
+                      label: Text(t, style: const TextStyle(fontSize: 12)),
+                      backgroundColor: const Color(0xFF2C3038),
+                      deleteIcon: const Icon(Icons.close, size: 14),
+                      onDeleted: () {
+                        setState(() {
+                          _selected.remove(t);
+                        });
+                      },
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    );
+                  },
+                ),
               ),
               const SizedBox(height: 6),
             ],

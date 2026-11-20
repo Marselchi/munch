@@ -153,4 +153,53 @@ void main() {
     expect(find.text('Эльф-наёмничек'), findsNothing);
     expect(find.text('Подземелье Ужаса'), findsNothing);
   });
+
+  testWidgets('TraitsPickerSheet renders many active traits in horizontal scroll without overflow', (tester) async {
+    final entities = [
+      const RuleEntity(
+        id: 'core.class.warrior',
+        kind: 'class',
+        title: 'Воин',
+        aliases: [],
+        setId: 'core',
+        ruleSections: [],
+      ),
+    ];
+
+    final manySelected = [
+      'Воин',
+      'Эльф',
+      'Дварф',
+      'Хафлинг',
+      'Старший',
+      'Элитный',
+      'Легендарный',
+      'Волшебник',
+      'Клирик',
+      'Вор',
+    ];
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: TraitsPickerSheet(
+            playerName: 'Тестер',
+            allEntities: entities,
+            initialSelected: manySelected,
+            onSave: (_) {},
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    // Verify no exception / overflow occurred
+    expect(tester.takeException(), isNull);
+
+    // Verify horizontal ListView exists for selected traits
+    final listViews = tester.widgetList<ListView>(find.byType(ListView));
+    final hasHorizontal = listViews.any((lv) => lv.scrollDirection == Axis.horizontal);
+    expect(hasHorizontal, isTrue);
+  });
 }

@@ -211,12 +211,6 @@ abstract final class StaticGlossarySpans {
       StaticSpan(start: 67, end: 72, termId: 'term_style'),
       StaticSpan(start: 91, end: 103, termId: 'term_bad_stuff'),
     ],
-    "Бонус против каждого монстра в бою равен удвоенному числу Сокровищ, указанных на карте этого монстра!": [
-      StaticSpan(start: 21, end: 28, termId: 'term_monster'),
-      StaticSpan(start: 31, end: 34, termId: 'term_combat'),
-      StaticSpan(start: 58, end: 66, termId: 'term_treasure'),
-      StaticSpan(start: 93, end: 100, termId: 'term_monster'),
-    ],
     "В Манчкин 2.0 удалены все штрафы, бонусы и проклятия, завязанные на биологический пол игрока или персонажа.": [
       StaticSpan(start: 43, end: 52, termId: 'term_curse'),
     ],
@@ -347,15 +341,20 @@ abstract final class StaticGlossarySpans {
       StaticSpan(start: 245, end: 253, termId: 'term_monster'),
       StaticSpan(start: 257, end: 263, termId: 'term_level'),
     ],
-    "Вводятся модификаторы персонажа: «Древний» (вешается на Расу, дает +3 боевой силы), «Элитный» (вешается на Класс, дает +3 боевой силы) и «Легендарный» (вешается на Класс, дает постоянный боевой бонус +3, а в эпической игре открывает третью дверь при вышибании двери).": [
-      StaticSpan(start: 34, end: 41, termId: 'term_ancient'),
-      StaticSpan(start: 56, end: 60, termId: 'term_race'),
-      StaticSpan(start: 70, end: 81, termId: 'term_combat_strength'),
-      StaticSpan(start: 85, end: 92, termId: 'term_elite'),
-      StaticSpan(start: 107, end: 112, termId: 'term_class'),
-      StaticSpan(start: 122, end: 133, termId: 'term_combat_strength'),
-      StaticSpan(start: 138, end: 149, termId: 'term_legendary'),
-      StaticSpan(start: 164, end: 169, termId: 'term_class'),
+    "Вводятся модификаторы персонажа из Манчкин 8: «Старший» (вешается на Расу: твой Уровень удваивается в бою в твой собственный ход), «Элитный» (вешается на Класс: боевой бонус против монстра равен удвоенному числу его Сокровищ) и «Легендарный» (вешается на Класс: позволяет открыть третью карту двери, если первые две не были монстрами). Усилители не дают отдельной постоянной силы помимо своего эффекта и сбрасываются при потере соответствующего класса или расы.": [
+      StaticSpan(start: 69, end: 73, termId: 'term_race'),
+      StaticSpan(start: 80, end: 87, termId: 'term_level'),
+      StaticSpan(start: 102, end: 105, termId: 'term_combat'),
+      StaticSpan(start: 132, end: 139, termId: 'term_elite'),
+      StaticSpan(start: 154, end: 159, termId: 'term_class'),
+      StaticSpan(start: 181, end: 188, termId: 'term_monster'),
+      StaticSpan(start: 216, end: 224, termId: 'term_treasure'),
+      StaticSpan(start: 229, end: 240, termId: 'term_legendary'),
+      StaticSpan(start: 255, end: 260, termId: 'term_class'),
+      StaticSpan(start: 324, end: 333, termId: 'term_monster'),
+      StaticSpan(start: 375, end: 379, termId: 'term_power'),
+      StaticSpan(start: 445, end: 451, termId: 'term_class'),
+      StaticSpan(start: 456, end: 460, termId: 'term_race'),
     ],
     "Вводятся новая раса Гном (может призывать монстра-иллюзию из руки в качестве боевого помощника) и класс Бард (способность «Завораживание» позволяет заставить соперника помочь в бою, а победа дает дополнительное сокровище).": [
       StaticSpan(start: 15, end: 19, termId: 'term_race'),
@@ -491,10 +490,6 @@ abstract final class StaticGlossarySpans {
     "Если при вышибании двери Монстра не было, у тебя есть выбор из двух действий:\n1. Поиск неприятностей: сыграй карту Монстра со своей руки и сразись с ним по обычным правилам.\n2. Чистка нычек: если ты не хочешь или не можешь драться, возьми вторую карту колоды Дверей в закрытую себе в руку.": [
       StaticSpan(start: 25, end: 32, termId: 'term_monster'),
       StaticSpan(start: 115, end: 122, termId: 'term_monster'),
-    ],
-    "Если при вышибании двери ни одна из открытых карт не оказалась монстром, после применения проклятий ты вышибаешь третью дверь!": [
-      StaticSpan(start: 63, end: 71, termId: 'term_monster'),
-      StaticSpan(start: 90, end: 99, termId: 'term_curse'),
     ],
     "Если смывка не удалась, ты можешь сбросить карту с руки и перебросить кубик.": [
       StaticSpan(start: 5, end: 11, termId: 'term_runaway'),
@@ -920,10 +915,6 @@ abstract final class StaticGlossarySpans {
     "Получает вторую попытку броска кубика при неудачной смывке, сбросив 1 карту.": [
       StaticSpan(start: 52, end: 58, termId: 'term_runaway'),
     ],
-    "Получает дополнительное Сокровище в закрытую при победе над монстрами из подземного мира или нежитью.": [
-      StaticSpan(start: 24, end: 33, termId: 'term_treasure'),
-      StaticSpan(start: 60, end: 69, termId: 'term_monster'),
-    ],
     "Получаешь +1 к боевой силе за каждого игрока, который НЕ является Культистом.": [
       StaticSpan(start: 15, end: 26, termId: 'term_combat_strength'),
     ],
@@ -1021,21 +1012,28 @@ abstract final class StaticGlossarySpans {
       StaticSpan(start: 4, end: 10, termId: 'term_runaway'),
       StaticSpan(start: 101, end: 111, termId: 'term_runaway'),
     ],
-    "Прикрепляется к карте Класса или Расы. Дает постоянный боевой бонус +3.": [
+    "Прикрепляется к карте Класса. В начале своего хода при вышибании двери, если ни одна из открытых карт не оказалась монстром (после применения проклятий), открой ещё одну дополнительную карту Двери. Если там монстр, ты обязан сразиться с ним. При потере или смене Класса сбрасывается.": [
       StaticSpan(start: 22, end: 28, termId: 'term_class'),
-      StaticSpan(start: 33, end: 37, termId: 'term_race'),
+      StaticSpan(start: 115, end: 123, termId: 'term_monster'),
+      StaticSpan(start: 142, end: 151, termId: 'term_curse'),
+      StaticSpan(start: 207, end: 213, termId: 'term_monster'),
+      StaticSpan(start: 263, end: 269, termId: 'term_class'),
     ],
-    "Прикрепляется к карте Класса или Расы. Дает постоянный боевой бонус +3. Разделяет судьбу карты, к которой прикреплен.": [
+    "Прикрепляется к карте Класса. Ты получаешь боевой бонус против каждого монстра в бою, равный удвоенному числу Сокровищ, указанных на карте этого монстра (например, против монстра за 3 Сокровища ты получаешь бонус +6). При потере или смене Класса сбрасывается.": [
       StaticSpan(start: 22, end: 28, termId: 'term_class'),
-      StaticSpan(start: 33, end: 37, termId: 'term_race'),
+      StaticSpan(start: 71, end: 78, termId: 'term_monster'),
+      StaticSpan(start: 81, end: 84, termId: 'term_combat'),
+      StaticSpan(start: 110, end: 118, termId: 'term_treasure'),
+      StaticSpan(start: 145, end: 152, termId: 'term_monster'),
+      StaticSpan(start: 171, end: 178, termId: 'term_monster'),
+      StaticSpan(start: 184, end: 193, termId: 'term_treasure'),
+      StaticSpan(start: 239, end: 245, termId: 'term_class'),
     ],
-    "Прикрепляется к карте Расы. Дает постоянный боевой бонус +3. Нельзя сыграть на Человека (у Человека нет карты). При потере или смене Расы Усилитель сбрасывается.": [
+    "Прикрепляется к карте Расы (нельзя сыграть на Человека). Твой Уровень удваивается в бою в твой собственный ход (когда сражаешься один или с помощником). При потере или смене Расы карта Старшего сбрасывается вместе с ней.": [
       StaticSpan(start: 22, end: 26, termId: 'term_race'),
-      StaticSpan(start: 133, end: 137, termId: 'term_race'),
-    ],
-    "Прикрепляется к любой карте Расы (Тёмный Эльф, Тёмный Дварф и т.д.). Дает постоянный боевой бонус +3, а против монстров-андедов (Нежити) — дополнительно +2.": [
-      StaticSpan(start: 28, end: 32, termId: 'term_race'),
-      StaticSpan(start: 111, end: 127, termId: 'term_monster'),
+      StaticSpan(start: 62, end: 69, termId: 'term_level'),
+      StaticSpan(start: 84, end: 87, termId: 'term_combat'),
+      StaticSpan(start: 174, end: 178, termId: 'term_race'),
     ],
     "Продавай шмотки с бонусом к цене.": [
       StaticSpan(start: 9, end: 15, termId: 'term_item'),
@@ -1227,11 +1225,6 @@ abstract final class StaticGlossarySpans {
       StaticSpan(start: 154, end: 159, termId: 'term_style'),
       StaticSpan(start: 175, end: 193, termId: 'term_style_enhancer'),
       StaticSpan(start: 233, end: 248, termId: 'term_monster'),
-    ],
-    "Твой Уровень считается удвоенным в бою в твой собственный ход (в том числе при совместном бое с помощником)!": [
-      StaticSpan(start: 5, end: 12, termId: 'term_level'),
-      StaticSpan(start: 35, end: 38, termId: 'term_combat'),
-      StaticSpan(start: 90, end: 93, termId: 'term_combat'),
     ],
     "Твой фамильяр оберегает тебя: если при Вышибании Двери ты вытягиваешь Проклятие, оно сбрасывается без вреда для тебя.": [
       StaticSpan(start: 70, end: 79, termId: 'term_curse'),
